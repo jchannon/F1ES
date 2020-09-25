@@ -10,12 +10,12 @@ A HTTP/CQRS/ES system based on a Formula 1 domain.  This system aims to illustra
 The domain for this system is a Formula 1 race. Below are the events which we will handle in our system:
 
 RaceStarted  
-RaceRedFlagged
-RaceRestarted
+RaceRedFlagged  
+RaceRestarted  
 DriverEnteredPitLane  
 DriverEnteredPitBox  
 DriverExitedPitBox  
-DriverExitedPitLane 
+DriverExitedPitLane   
 DriverPenaltyApplied  
 TyreChanged  
 NoseChanged  
@@ -26,6 +26,6 @@ DriverCrashed
 DriverRetired  
 SafetyCarDeployed  
 SafetyCarEnded    
-VirtualSafetyCarDeployed
-VirtualSafetyCarEnded
+VirtualSafetyCarDeployed  
+VirtualSafetyCarEnded  
 RaceEnded  
