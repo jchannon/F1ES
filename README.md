@@ -17,6 +17,7 @@ DriverEnteredPitBox
 DriverExitedPitBox  
 DriverExitedPitLane   
 DriverPenaltyApplied  
+DriverBlackFlagged  
 TyreChanged  
 NoseChanged  
 DownforceChanged  
