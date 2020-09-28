@@ -30,3 +30,7 @@ SafetyCarEnded
 VirtualSafetyCarDeployed  
 VirtualSafetyCarEnded  
 RaceEnded  
+
+## References
+
+1. F1 2020 Rules https://www.statsf1.com/reglement/sportif.pdf
