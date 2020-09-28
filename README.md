@@ -29,6 +29,8 @@ SafetyCarDeployed
 SafetyCarEnded    
 VirtualSafetyCarDeployed  
 VirtualSafetyCarEnded  
+PitLaneOpened
+PitLandClosed - can be closed for safety reasons see Hamilton 2020 entering when closed, the exit is closed 30mins before the race starts
 RaceEnded  
 
 ## References
