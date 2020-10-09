@@ -7,7 +7,8 @@ A HTTP/CQRS/ES system based on a Formula 1 domain.  This system aims to illustra
 ## CQRS
 
 ## ES
-The domain for this system is a Formula 1 race. Below are the events which we will handle in our system:
+
+### Events
 
 RaceStarted  
 RaceRedFlagged  
@@ -32,6 +33,8 @@ VirtualSafetyCarEnded
 PitLaneOpened
 PitLandClosed - can be closed for safety reasons see Hamilton 2020 entering when closed, the exit is closed 30mins before the race starts
 RaceEnded  
+
+### Aggregates
 
 ## References
 
