@@ -48,6 +48,7 @@ module Model =
         member this.Apply(event: RaceStarted) =
             this.RaceStarted <- Some event.RaceStarted
             this.Id <- event.RaceId
+            printfn "%A" this.Id
             ()
 
         member val Id = Guid.Empty with get, set
@@ -63,5 +64,5 @@ module Model =
         
         member this.Apply(event: RaceEnded) =
             this.RaceStarted <- Some event.RaceEnded
+            printfn "%A" this.Id
             ()
-        
