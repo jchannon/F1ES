@@ -1,8 +1,8 @@
 namespace F1ES
 
-module Model=
+module Model =
     open System
-
+    open F1ES.Events
     //Driver, Car modelled for a race, obviously throughout a season you would want a separate model for each
 
     type Team =
@@ -22,8 +22,8 @@ module Model=
           BlackFlagged: bool
           PenaltyApplied: bool
           PenaltyPointsAppied: int
-          Retired:bool
-          Crashed:bool }
+          Retired: bool
+          Crashed: bool }
 
     type Car =
         { Team: Team
@@ -43,13 +43,25 @@ module Model=
           VirtualSafetyCarDeployed: DateTimeOffset option
           VirtualSafetyCarEnded: DateTimeOffset option }
 
-    type Race =
-        { RaceStarted: DateTimeOffset
-          RaceEnded: DateTimeOffset
-          RaceRedFlagged: bool
-          RaceRedFlaggedTime: DateTimeOffset
-          RaceRestarted: DateTimeOffset []
-          Laps: Lap []
-          PitLaneOpened: DateTimeOffset
-          PitLaneClosed: DateTimeOffset
-          Cars: Car [] }
+    type Race() =
+
+        member this.Apply(event: RaceStarted) =
+            this.RaceStarted <- Some event.RaceStarted
+            this.Id <- event.RaceId
+            ()
+
+        member val Id = Guid.Empty with get, set
+        member val RaceStarted: DateTimeOffset option = None with get, set
+        member val RaceEnded: DateTimeOffset option = None with get, set
+        member val RedFlagged = false with get, set
+        member val RedFlaggedTime: DateTimeOffset option = None with get, set
+        member val RaceReStarted = Array.empty<DateTimeOffset option> with get, set
+        member val Laps = Array.empty<Lap> with get, set
+        member val PitLaneOpened: DateTimeOffset option = None with get, set
+        member val PitLaneClosed: DateTimeOffset option = None with get, set
+        member val Cars = Array.empty<Car> with get, set
+        
+        member this.Apply(event: RaceEnded) =
+            this.RaceStarted <- Some event.RaceEnded
+            ()
+        

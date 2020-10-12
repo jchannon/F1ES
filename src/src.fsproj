@@ -6,8 +6,13 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Include="Events.fs" />
     <Compile Include="Model.fs" />
     <Compile Include="Program.fs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Marten" Version="3.13.1" />
   </ItemGroup>
 
 
