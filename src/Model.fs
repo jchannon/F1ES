@@ -1,7 +1,5 @@
 namespace F1ES
 
-open System.Diagnostics
-
 module Model =
     open System
     open F1ES.Events
@@ -9,8 +7,6 @@ module Model =
     //Driver, Car modelled for a race, obviously throughout a season you would want a separate model for each
 
     type Race() =
-
-
         member val Id = Guid.Empty with get, set
         member val RaceId: String option = None with get, set
         member val RaceStarted: DateTimeOffset option = None with get, set
