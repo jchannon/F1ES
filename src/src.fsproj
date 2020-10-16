@@ -6,13 +6,19 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Include="Team.fs" />
+    <Compile Include="Lap.fs" />
+    <Compile Include="Driver.fs" />
+    <Compile Include="Car.fs" />
     <Compile Include="Events.fs" />
     <Compile Include="Model.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="FSharp.SystemTextJson" Version="0.14.8" />
     <PackageReference Include="Marten" Version="3.13.1" />
+    
   </ItemGroup>
 
 
