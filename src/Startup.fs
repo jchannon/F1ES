@@ -10,7 +10,7 @@ open Microsoft.Extensions.Logging
 open Microsoft.Extensions.Hosting
 open Giraffe
 open Marten
-open F1ES.Handlers
+open F1ES.HTTPHandlers
 
 type Startup(configuration: IConfiguration) =
     let appConfiguration = AppConfiguration()

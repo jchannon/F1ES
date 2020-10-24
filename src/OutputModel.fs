@@ -1,6 +1,6 @@
 namespace F1ES
 
-module Model =
+module OutputModel =
     open System
     open F1ES.Events
 
