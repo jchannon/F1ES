@@ -39,14 +39,10 @@ module HTTPHandlers =
     let getRaceHandler (streamId: Guid): HttpHandler =
         fun (next: HttpFunc) (ctx: HttpContext) ->
             task {
-                //TODO Put this in a query handler
                 let store =
                     ctx.RequestServices.GetRequiredService<IDocumentStore>()
 
-                use session = store.OpenSession()
-
-                let returnedRace =
-                    session.Events.AggregateStream<Race>(streamId)
+                let returnedRace = CommandHandlers.getRace store streamId
 
                 return! ctx.WriteJsonAsync returnedRace
             }

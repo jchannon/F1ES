@@ -2,6 +2,7 @@ namespace F1ES
 
 module CommandHandlers =
 
+    open System
     open F1ES.Events
     open F1ES.OutputModel
     open Marten
@@ -26,5 +27,10 @@ module CommandHandlers =
         |> ignore
 
         session.SaveChanges()
-        
+
         stream.Id
+
+    let getRace (store: IDocumentStore) (streamId: Guid) =
+        use session = store.OpenSession()
+
+        session.Events.AggregateStream<Race>(streamId)
