@@ -1,8 +1,8 @@
 namespace F1ES
 
-open System
-
 module Events =
+    open System
+
     type Car = {DriverName:string; Team:Team}
     
     type RaceInitialised(country:string,circuit:string,cars:Car[]) =
