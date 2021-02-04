@@ -40,3 +40,34 @@ module InputModel =
                           Type = "https://example.net/validation-error" }
 
                     Error(RequestErrors.unprocessableEntity (problemDetailsHandler problemDetails)) //TODO Problem Details response
+
+    type Status =
+        | Start of string
+        | Stop of string
+
+    [<CLIMutable>]
+    type RaceStatusUpdateInput =
+        { Status: string }
+        member this.HasErrors() =
+            //TODO Can't seem to deserialize to discriminated union of Status with value Start of "Start"
+            let statusValidation = match this.Status.ToLower() with
+                                    |"start" | "stop" -> None
+                                    |_ -> Some "Status needs to be Start or Stop"
+           
+            [|statusValidation|] |> Array.choose id
+
+        interface IProblemDetailsValidation<RaceStatusUpdateInput> with
+            member this.Validate path =
+                match this.HasErrors() with
+                | [||] -> Ok this
+                | x ->
+                    let errors = String.Join(",", x)
+
+                    let problemDetails =
+                        { Detail = errors
+                          Status = 422
+                          Title = "Model validation failed"
+                          Instance = path
+                          Type = "https://example.net/validation-error" }
+
+                    Error(RequestErrors.unprocessableEntity (problemDetailsHandler problemDetails)) //TODO Problem Details response

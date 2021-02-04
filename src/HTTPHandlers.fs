@@ -46,3 +46,23 @@ module HTTPHandlers =
 
                 return! ctx.WriteJsonAsync returnedRace
             }
+            
+    let updateRaceStatusHandler (streamId: Guid): HttpHandler =
+        fun (next: HttpFunc) (ctx: HttpContext) ->
+            task {
+                let store =
+                    ctx.RequestServices.GetRequiredService<IDocumentStore>()
+                    
+                let! model = tryBindJsonBody<RaceStatusUpdateInput> (ctx)
+
+                match model with
+                | Ok x ->
+                    do CommandHandlers.updateRaceStatus store streamId x.Status
+                    
+                    ctx.SetStatusCode 204
+                    return! next ctx
+                    
+                | Error errorHandler -> return! errorHandler next ctx
+
+                
+            }

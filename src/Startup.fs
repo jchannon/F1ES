@@ -20,7 +20,8 @@ type Startup(configuration: IConfiguration) =
     let webApp =
         choose [ route "/" >=> GET >=> text "There's no place like 127.0.0.1"
                  route "/race" >=> POST >=> initializeRaceHandler
-                 GET >=> routef "/race/%O" getRaceHandler ]
+                 GET >=> routef "/race/%O" getRaceHandler
+                 PUT >=> routef "/race/%O/status" updateRaceStatusHandler ]
 
     member __.ConfigureServices(services: IServiceCollection) =
 
