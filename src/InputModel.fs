@@ -41,17 +41,18 @@ module InputModel =
 
                     Error(RequestErrors.unprocessableEntity (problemDetailsHandler problemDetails)) //TODO Problem Details response
 
-    type Status =
-        | Start of string
-        | Stop of string
+    [<Literal>]
+    let Start = "start"
+    [<Literal>]
+    let Stop = "stop"
 
     [<CLIMutable>]
     type RaceStatusUpdateInput =
-        { Status: string }
+        { Command: string }
         member this.HasErrors() =
             //TODO Can't seem to deserialize to discriminated union of Status with value Start of "Start"
-            let statusValidation = match this.Status.ToLower() with
-                                    |"start" | "stop" -> None
+            let statusValidation = match this.Command.ToLower() with
+                                    |Start | Stop -> None
                                     |_ -> Some "Status needs to be Start or Stop"
            
             [|statusValidation|] |> Array.choose id

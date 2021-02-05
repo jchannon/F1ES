@@ -21,7 +21,7 @@ type Startup(configuration: IConfiguration) =
         choose [ route "/" >=> GET >=> text "There's no place like 127.0.0.1"
                  route "/race" >=> POST >=> initializeRaceHandler
                  GET >=> routef "/race/%O" getRaceHandler
-                 PUT >=> routef "/race/%O/status" updateRaceStatusHandler ]
+                 POST >=> routef "/race/%O" updateRace ]
 
     member __.ConfigureServices(services: IServiceCollection) =
 

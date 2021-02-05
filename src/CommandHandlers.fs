@@ -40,16 +40,16 @@ module CommandHandlers =
         //TODO Get list of races from a projection
         ()
 
-    let updateRaceStatus (store: IDocumentStore) (streamId: Guid) (status: string) =
+    let updateRace (store: IDocumentStore) (streamId: Guid) (status: string) =
         use session = store.OpenSession()
 
         match status.ToLower() with
-        | "start" ->
+        | Start ->
             let raceStarted = RaceStarted(DateTimeOffset.UtcNow)
 
             session.Events.Append(streamId, raceStarted)
             |> ignore
-        | "stop" ->
+        | Stop ->
             let raceEnded = RaceEnded(DateTimeOffset.UtcNow)
 
             session.Events.Append(streamId, raceEnded)

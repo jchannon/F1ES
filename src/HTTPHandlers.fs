@@ -43,11 +43,12 @@ module HTTPHandlers =
                     ctx.RequestServices.GetRequiredService<IDocumentStore>()
 
                 let returnedRace = CommandHandlers.getRace store streamId
-
+                //todo return links with link rels on how to update a race
+                //todo don't return a start link when the race has started
                 return! ctx.WriteJsonAsync returnedRace
             }
             
-    let updateRaceStatusHandler (streamId: Guid): HttpHandler =
+    let updateRace (streamId: Guid): HttpHandler =
         fun (next: HttpFunc) (ctx: HttpContext) ->
             task {
                 let store =
@@ -57,7 +58,7 @@ module HTTPHandlers =
 
                 match model with
                 | Ok x ->
-                    do CommandHandlers.updateRaceStatus store streamId x.Status
+                    do CommandHandlers.updateRace store streamId x.Command
                     
                     ctx.SetStatusCode 204
                     return! next ctx
