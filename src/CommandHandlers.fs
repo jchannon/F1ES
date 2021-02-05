@@ -66,8 +66,10 @@ module CommandHandlers =
                   Type = "https://example.net/validation-error" }
         | None, None ->
             let raceStarted = RaceStarted(DateTimeOffset.UtcNow)
+            let pitLaneOpened = PitLaneOpened(DateTimeOffset.UtcNow)
 
-            session.Events.Append(streamId, raceStarted)
+
+            session.Events.Append(streamId, raceStarted, pitLaneOpened)
             |> ignore
 
             session.SaveChanges()
@@ -193,6 +195,54 @@ module CommandHandlers =
             session.SaveChanges()
             Ok()
 
+    let openPitLane (store: IDocumentStore) (streamId: Guid) (path: string) =
+        use session = store.OpenSession()
+
+        let race =
+            session.Events.AggregateStream<Race>(streamId)
+
+        match race.PitLaneOpen with
+        | false ->
+
+            let pitLaneOpened = PitLaneOpened(DateTimeOffset.UtcNow)
+
+            session.Events.Append(streamId, pitLaneOpened)
+            |> ignore
+
+            session.SaveChanges()
+            Ok()
+        | true ->
+            Error
+                { Detail = "The pitlane is already opened"
+                  Status = 409
+                  Title = "Race command failed"
+                  Instance = path
+                  Type = "https://example.net/validation-error" }
+
+    let closePitLane (store: IDocumentStore) (streamId: Guid) (path: string) =
+        use session = store.OpenSession()
+
+        let race =
+            session.Events.AggregateStream<Race>(streamId)
+
+        match race.PitLaneOpen with
+        | true ->
+
+            let pitLaneClosed = PitLaneClosed(DateTimeOffset.UtcNow)
+
+            session.Events.Append(streamId, pitLaneClosed)
+            |> ignore
+
+            session.SaveChanges()
+            Ok()
+        | false ->
+            Error
+                { Detail = "The pitlane is already closed"
+                  Status = 409
+                  Title = "Race command failed"
+                  Instance = path
+                  Type = "https://example.net/validation-error" }
+
 
     let updateRace (store: IDocumentStore) (streamId: Guid) (command: string) (path: string) =
         use session = store.OpenSession()
@@ -203,6 +253,8 @@ module CommandHandlers =
             | Stop -> stopRace store streamId path
             | Restart -> restartRace store streamId path
             | RedFlag -> redflagRace store streamId path
+            | OpenPitLane -> openPitLane store streamId path
+            | ClosePitLane -> closePitLane store streamId path
             | _ ->
                 Error
                     { Detail = "Race command failed, unknown command"

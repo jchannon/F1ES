@@ -22,3 +22,9 @@ module Events =
     
     type RaceRestarted(raceRestarted:DateTimeOffset) =
         member this.RaceRestarted = raceRestarted
+        
+    type PitLaneOpened(pitLaneOpened:DateTimeOffset) =
+        member this.PitLaneOpened = pitLaneOpened
+        
+    type PitLaneClosed(pitLaneClosed:DateTimeOffset) =
+        member this.PitLaneClosed = pitLaneClosed

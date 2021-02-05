@@ -53,7 +53,13 @@ module InputModel =
     [<Literal>]
     let RedFlag = "redflag"
     
-    let Commands = [| Start; Stop; Restart; RedFlag |]
+    [<Literal>]
+    let OpenPitLane = "openpitlane"
+    
+    [<Literal>]
+    let ClosePitLane = "closepitlane"
+    
+    let Commands = [| Start; Stop; Restart; RedFlag; OpenPitLane; ClosePitLane; |]
 
     [<CLIMutable>]
     type RaceStatusUpdateInput =
