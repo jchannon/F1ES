@@ -43,19 +43,28 @@ module InputModel =
 
     [<Literal>]
     let Start = "start"
+
     [<Literal>]
     let Stop = "stop"
+
+    [<Literal>]
+    let Restart = "restart"
+
+    let Commands = [| Start; Stop; Restart |]
 
     [<CLIMutable>]
     type RaceStatusUpdateInput =
         { Command: string }
         member this.HasErrors() =
-            //TODO Can't seem to deserialize to discriminated union of Status with value Start of "Start"
-            let statusValidation = match this.Command.ToLower() with
-                                    |Start | Stop -> None
-                                    |_ -> Some "Status needs to be Start or Stop"
-           
-            [|statusValidation|] |> Array.choose id
+            let statusValidation =
+                match Commands
+                      |> Array.exists (fun x -> x.Equals(this.Command, StringComparison.OrdinalIgnoreCase)) with
+                | true -> None
+                | false ->
+                    let commands = String.Join(" or ", Commands)
+                    Some (sprintf "Status needs to be %s" commands)
+
+            [| statusValidation |] |> Array.choose id
 
         interface IProblemDetailsValidation<RaceStatusUpdateInput> with
             member this.Validate path =

@@ -66,7 +66,7 @@ module HTTPHandlers =
                         return! next ctx
                     |Error e ->
                         ctx.SetStatusCode e.Status 
-                        return! (problemDetailsHandler e) next ctx
+                        return! problemDetailsHandler e next ctx
                     
                 | Error errorHandler -> return! errorHandler next ctx
 

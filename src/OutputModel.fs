@@ -46,3 +46,7 @@ module OutputModel =
         member this.Apply(event: RaceEnded) =
             this.RaceEnded <- Some event.RaceEnded
             ()
+            
+        member this.Apply(event: RaceRestarted) =
+            this.RaceReStarted <- Array.append this.RaceReStarted [|Some event.RaceRestarted|]
+            ()
