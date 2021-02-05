@@ -10,6 +10,7 @@ module HTTPHandlers =
     open FSharp.Control.Tasks.V2.ContextInsensitive
     open Microsoft.Extensions.DependencyInjection
     open F1ES.InputModel
+    open F1ES.ProblemDetails
 
     let initializeRaceHandler =
         fun (next: HttpFunc) (ctx: HttpContext) ->
@@ -58,10 +59,14 @@ module HTTPHandlers =
 
                 match model with
                 | Ok x ->
-                    do CommandHandlers.updateRace store streamId x.Command
-                    
-                    ctx.SetStatusCode 204
-                    return! next ctx
+                    let updateRaceResult = CommandHandlers.updateRace store streamId x.Command (ctx.Request.Path.ToString())
+                    match updateRaceResult with
+                    |Ok _ ->
+                        ctx.SetStatusCode 204
+                        return! next ctx
+                    |Error e ->
+                        ctx.SetStatusCode e.Status 
+                        return! (problemDetailsHandler e) next ctx
                     
                 | Error errorHandler -> return! errorHandler next ctx
 
