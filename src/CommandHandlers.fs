@@ -147,6 +147,52 @@ module CommandHandlers =
             session.SaveChanges()
             Ok()
 
+    let redflagRace (store: IDocumentStore) (streamId: Guid) (path: string) =
+        use session = store.OpenSession()
+
+        let race =
+            session.Events.AggregateStream<Race>(streamId)
+
+        match race.RedFlaggedTime, race.RaceStarted, race.RaceEnded with
+
+        | Some _, None, None -> Ok()
+        | Some _, None, Some _
+        | None, None, None ->
+            Error
+                { Detail = "The race has not started"
+                  Status = 409
+                  Title = "Race command failed"
+                  Instance = path
+                  Type = "https://example.net/validation-error" }
+
+        | None, Some _, Some _ -> Ok()
+        | None, None, Some _ ->
+            Error
+                { Detail = "The race has already ended"
+                  Status = 409
+                  Title = "Race command failed"
+                  Instance = path
+                  Type = "https://example.net/validation-error" }
+
+        | Some _, Some _, None -> Ok()
+        | Some _, Some _, Some _ ->
+            Error
+                { Detail = "The race has already been red flagged"
+                  Status = 409
+                  Title = "Race command failed"
+                  Instance = path
+                  Type = "https://example.net/validation-error" }
+
+        | None, Some _, None ->
+            let raceRedFlagged = RaceRedFlagged(DateTimeOffset.UtcNow)
+            let raceEnded = RaceEnded(DateTimeOffset.UtcNow)
+
+            session.Events.Append(streamId, raceRedFlagged, raceEnded)
+            |> ignore
+
+            session.SaveChanges()
+            Ok()
+
 
     let updateRace (store: IDocumentStore) (streamId: Guid) (command: string) (path: string) =
         use session = store.OpenSession()
@@ -156,6 +202,7 @@ module CommandHandlers =
             | Start -> startRace store streamId path
             | Stop -> stopRace store streamId path
             | Restart -> restartRace store streamId path
+            | RedFlag -> redflagRace store streamId path
             | _ ->
                 Error
                     { Detail = "Race command failed, unknown command"

@@ -11,7 +11,6 @@ module OutputModel =
         member val RaceId: String option = None with get, set
         member val RaceStarted: DateTimeOffset option = None with get, set
         member val RaceEnded: DateTimeOffset option = None with get, set
-        member val RedFlagged = false with get, set
         member val RedFlaggedTime: DateTimeOffset option = None with get, set
         member val RaceReStarted = Array.empty<DateTimeOffset option> with get, set
         member val Laps = Array.empty<Lap> with get, set
@@ -45,6 +44,10 @@ module OutputModel =
 
         member this.Apply(event: RaceEnded) =
             this.RaceEnded <- Some event.RaceEnded
+            ()
+            
+        member this.Apply(event: RaceRedFlagged) =
+            this.RedFlaggedTime <- Some event.RedFlaggedTime
             ()
             
         member this.Apply(event: RaceRestarted) =

@@ -17,5 +17,8 @@ module Events =
     type RaceEnded(raceEnded:DateTimeOffset) =
         member this.RaceEnded = raceEnded
 
+    type RaceRedFlagged(redFlaggedTime:DateTimeOffset) =
+        member this.RedFlaggedTime = redFlaggedTime
+    
     type RaceRestarted(raceRestarted:DateTimeOffset) =
         member this.RaceRestarted = raceRestarted

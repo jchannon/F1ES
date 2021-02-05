@@ -50,7 +50,10 @@ module InputModel =
     [<Literal>]
     let Restart = "restart"
 
-    let Commands = [| Start; Stop; Restart |]
+    [<Literal>]
+    let RedFlag = "redflag"
+    
+    let Commands = [| Start; Stop; Restart; RedFlag |]
 
     [<CLIMutable>]
     type RaceStatusUpdateInput =
