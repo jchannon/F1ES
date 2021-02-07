@@ -11,9 +11,10 @@
         <Compile Include="DomainModels\Driver.fs" />
         <Compile Include="DomainModels\Car.fs" />
         <Compile Include="DomainEvents\Events.fs" />
+        <Compile Include="Aggregates\Aggregates.fs" />
+        <Compile Include="Projections\Projections.fs" />
         <Compile Include="ProblemDetails.fs" />
         <Compile Include="InputModel.fs" />
-        <Compile Include="OutputModel.fs" />
         <Compile Include="CommandHandlers.fs" />
         <Compile Include="HTTPHandlers.fs" />
         <Compile Include="Startup.fs" />
@@ -22,6 +23,7 @@
             <CopyToOutputDirectory>Always</CopyToOutputDirectory>
             <CopyToPublishDirectory>Always</CopyToPublishDirectory>
         </Content>
+        
     </ItemGroup>
     <ItemGroup>
         <PackageReference Include="FSharp.SystemTextJson" Version="0.14.8" />

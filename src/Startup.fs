@@ -1,5 +1,6 @@
 namespace F1ES
 
+open System
 open System.Text.Json
 open System.Text.Json.Serialization
 open Giraffe.Serialization
@@ -11,6 +12,7 @@ open Microsoft.Extensions.Hosting
 open Giraffe
 open Marten
 open F1ES.HTTPHandlers
+open F1ES.Projections
 
 type Startup(configuration: IConfiguration) =
     let appConfiguration = AppConfiguration()
@@ -18,7 +20,9 @@ type Startup(configuration: IConfiguration) =
     do configuration.Bind(appConfiguration)
 
     let webApp =
-        choose [ route "/" >=> GET >=> text "There's no place like 127.0.0.1"
+        choose [ route "/"
+                 >=> GET
+                 >=> text "There's no place like 127.0.0.1"
                  route "/race" >=> POST >=> initializeRaceHandler
                  GET >=> routef "/race/%O" getRaceHandler
                  POST >=> routef "/race/%O" updateRace ]
@@ -33,7 +37,10 @@ type Startup(configuration: IConfiguration) =
         services.AddSingleton<IJsonSerializer>(SystemTextJsonSerializer(options))
         |> ignore
 
-        services.AddMarten(appConfiguration.ConnectionString)
+        services.AddMarten(fun x ->
+            x.Connection(appConfiguration.ConnectionString)
+            x.Events.InlineProjections.Add<RaceProjection>()
+            )
         |> ignore
 
         services.AddGiraffe() |> ignore

@@ -3,7 +3,6 @@ namespace F1ES
 module HTTPHandlers =
     open ModelBinding
     open System
-    open F1ES.OutputModel
     open Giraffe
     open Marten
     open Microsoft.AspNetCore.Http

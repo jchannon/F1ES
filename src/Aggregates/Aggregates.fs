@@ -1,12 +1,11 @@
 namespace F1ES
 
-module OutputModel =
+module Aggregates =
+
     open System
     open F1ES.Events
 
-    //Driver, Car modelled for a race, obviously throughout a season you would want a separate model for each
-
-    type Race() =
+    type RaceAggregate() =
         member val Id = Guid.Empty with get, set
         member val RaceId: String option = None with get, set
         member val RaceStarted: DateTimeOffset option = None with get, set
