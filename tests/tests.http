@@ -1,0 +1,62 @@
+### Initilise race
+#@no-log
+POST http://localhost:5000/race
+Content-Type: application/json
+
+{"trackname":"Silverstone","country":"UK"}
+
+> {% client.global.set("location",response.headers.valueOf("location")) %}
+
+### Start race
+#@no-log
+POST {{location}}
+Content-Type: application/json
+
+{"command": "start"}
+
+### Restart race
+#@no-log
+POST {{location}}
+Content-Type: application/json
+
+{"command": "restart"}
+
+### Red flag race
+#@no-log
+POST {{location}}
+Content-Type: application/json
+
+{"command": "redflag"}
+
+### Open pit lane
+#@no-log
+POST {{location}}
+Content-Type: application/json
+
+{"command": "openpitlane"}
+
+### Close pit lane
+#@no-log
+POST {{location}}
+Content-Type: application/json
+
+{"command": "closepitlane"}
+
+### Stop race
+#@no-log
+POST {{location}}
+Content-Type: application/json
+
+{"command": "stop"}
+
+### Change start time
+#@no-log
+POST {{location}}
+Content-Type: application/json
+
+{"command": "changestarttime","proposedracestarttime": "2021-02-09T21:05:24Z"}
+
+### Get a race 
+#@no-log
+GET {{location}}
+

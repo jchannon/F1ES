@@ -158,17 +158,7 @@ module CommandHandlers =
 
         match race.RedFlaggedTime, race.RaceStarted, race.RaceEnded with
 
-        | Some _, None, None -> Ok()
-        | Some _, None, Some _
-        | None, None, None ->
-            Error
-                { Detail = "The race has not started"
-                  Status = 409
-                  Title = "Race command failed"
-                  Instance = path
-                  Type = "https://example.net/validation-error" }
-
-        | None, Some _, Some _ -> Ok()
+        | None, Some _, Some _
         | None, None, Some _ ->
             Error
                 { Detail = "The race has already ended"
@@ -177,7 +167,9 @@ module CommandHandlers =
                   Instance = path
                   Type = "https://example.net/validation-error" }
 
-        | Some _, Some _, None -> Ok()
+        | Some _, None, Some _
+        | Some _, None, None
+        | Some _, Some _, None
         | Some _, Some _, Some _ ->
             Error
                 { Detail = "The race has already been red flagged"
@@ -186,6 +178,7 @@ module CommandHandlers =
                   Instance = path
                   Type = "https://example.net/validation-error" }
 
+        | None, None, None
         | None, Some _, None ->
             let raceRedFlagged = RaceRedFlagged(DateTimeOffset.UtcNow)
             let raceEnded = RaceEnded(DateTimeOffset.UtcNow)
@@ -244,18 +237,58 @@ module CommandHandlers =
                   Instance = path
                   Type = "https://example.net/validation-error" }
 
+    let changeProposedStartTime (store: IDocumentStore) (streamId: Guid) model (path: string) =
+        use session = store.OpenSession()
 
-    let updateRace (store: IDocumentStore) (streamId: Guid) (command: string) (path: string) =
+        let race =
+            session.Events.AggregateStream<RaceAggregate>(streamId)
+
+        match race.RaceStarted, race.RaceEnded with
+        | Some _, Some _ ->
+            Error
+                { Detail = "The race has ended"
+                  Status = 409
+                  Title = "Race command failed"
+                  Instance = path
+                  Type = "https://example.net/validation-error" }
+
+        | None, Some _ ->
+            Error
+                { Detail = "The race has not started but has ended"
+                  Status = 409
+                  Title = "Race command failed"
+                  Instance = path
+                  Type = "https://example.net/validation-error" }
+        | Some _, None ->
+            Error
+                { Detail = "The race has already started"
+                  Status = 409
+                  Title = "Race command failed"
+                  Instance = path
+                  Type = "https://example.net/validation-error" }
+        | None, None ->
+            let proposedRaceStartTimeChanged =
+                ProposedRaceStartTimeChanged(model.ProposedRaceStartTime.Value)
+
+            session.Events.Append(streamId, proposedRaceStartTimeChanged)
+            |> ignore
+
+            session.SaveChanges()
+            Ok()
+
+
+    let updateRace (store: IDocumentStore) (streamId: Guid) (model: RaceStatusUpdateInput) (path: string) =
         use session = store.OpenSession()
 
         let result =
-            match command.ToLower() with
+            match model.Command.ToLower() with
             | Start -> startRace store streamId path
             | Stop -> stopRace store streamId path
             | Restart -> restartRace store streamId path
             | RedFlag -> redflagRace store streamId path
             | OpenPitLane -> openPitLane store streamId path
             | ClosePitLane -> closePitLane store streamId path
+            | ChangeProposedStartTime -> changeProposedStartTime store streamId model path
             | _ ->
                 Error
                     { Detail = "Race command failed, unknown command"

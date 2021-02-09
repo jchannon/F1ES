@@ -58,7 +58,7 @@ module HTTPHandlers =
 
                 match model with
                 | Ok x ->
-                    let updateRaceResult = CommandHandlers.updateRace store streamId x.Command (ctx.Request.Path.ToString())
+                    let updateRaceResult = CommandHandlers.updateRace store streamId x (ctx.Request.Path.ToString())
                     match updateRaceResult with
                     |Ok _ ->
                         ctx.SetStatusCode 204

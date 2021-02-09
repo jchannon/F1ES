@@ -59,11 +59,15 @@ module InputModel =
     [<Literal>]
     let ClosePitLane = "closepitlane"
     
-    let Commands = [| Start; Stop; Restart; RedFlag; OpenPitLane; ClosePitLane; |]
+    [<Literal>]
+    let ChangeProposedStartTime = "changestarttime"
+    
+    let Commands = [| Start; Stop; Restart; RedFlag; OpenPitLane; ClosePitLane; ChangeProposedStartTime |]
 
     [<CLIMutable>]
     type RaceStatusUpdateInput =
-        { Command: string }
+        { Command: string
+          ProposedRaceStartTime : DateTimeOffset option }
         member this.HasErrors() =
             let statusValidation =
                 match Commands
@@ -72,8 +76,15 @@ module InputModel =
                 | false ->
                     let commands = String.Join(" or ", Commands)
                     Some (sprintf "Status needs to be %s" commands)
+                    
+            let proposedRaceStartTimeValidation = match this.Command with
+                                                  | ChangeProposedStartTime ->
+                                                      match this.ProposedRaceStartTime with
+                                                      | Some _ -> None
+                                                      | None -> Some "A proposed start time is required"
+                                                  | _ -> None
 
-            [| statusValidation |] |> Array.choose id
+            [| statusValidation; proposedRaceStartTimeValidation |] |> Array.choose id
 
         interface IProblemDetailsValidation<RaceStatusUpdateInput> with
             member this.Validate path =
