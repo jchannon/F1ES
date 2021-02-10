@@ -23,3 +23,4 @@ module ProblemDetails =
                     serializer.SerializeToBytes model
                     |> ctx.WriteBytesAsync
             }
+            

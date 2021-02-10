@@ -3,7 +3,7 @@
 POST http://localhost:5000/race
 Content-Type: application/json
 
-{"trackname":"Silverstone","country":"UK"}
+{"trackname":"Silverstone","country":"UK","proposedracestarttime": "99999-02-09T21:05:24Z","cars":[]}
 
 > {% client.global.set("location",response.headers.valueOf("location")) %}
 
@@ -47,7 +47,7 @@ Content-Type: application/json
 POST {{location}}
 Content-Type: application/json
 
-{"command": "stop"}
+{"command": "stopkk"}
 
 ### Change start time
 #@no-log

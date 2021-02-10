@@ -32,7 +32,7 @@ type Startup(configuration: IConfiguration) =
         let options = JsonSerializerOptions()
         options.Converters.Add(JsonFSharpConverter())
         options.PropertyNameCaseInsensitive <- true
-        //options.IgnoreNullValues
+        //options.IgnoreNullValues <- true
 
         services.AddSingleton<IJsonSerializer>(SystemTextJsonSerializer(options))
         |> ignore

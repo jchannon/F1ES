@@ -9,7 +9,9 @@ module InputModel =
     [<CLIMutable>]
     type RaceInitialisedInput =
         { Country: string
-          TrackName: string }
+          TrackName: string
+          ProposedRaceStartTime: DateTimeOffset
+          Cars: Car list }
         member this.HasErrors() =
 
             let trackValidation =
@@ -20,7 +22,20 @@ module InputModel =
             let countryValidation =
                 if String.IsNullOrWhiteSpace this.Country then Some "Country is required" else None
 
-            [| trackValidation; countryValidation |]
+            let proposedRaceStartTimeValidation =
+                if this.ProposedRaceStartTime = DateTimeOffset.MinValue
+                then Some "ProposedRaceStartTime is required"
+                else None
+
+            let carsValidation =
+                match this.Cars with
+                | [] -> Some "Cars is required"
+                | _ -> None
+
+            [| trackValidation
+               countryValidation
+               proposedRaceStartTimeValidation
+               carsValidation |]
             |> Array.choose id
 
         //None
@@ -52,22 +67,29 @@ module InputModel =
 
     [<Literal>]
     let RedFlag = "redflag"
-    
+
     [<Literal>]
     let OpenPitLane = "openpitlane"
-    
+
     [<Literal>]
     let ClosePitLane = "closepitlane"
-    
+
     [<Literal>]
     let ChangeProposedStartTime = "changestarttime"
-    
-    let Commands = [| Start; Stop; Restart; RedFlag; OpenPitLane; ClosePitLane; ChangeProposedStartTime |]
+
+    let Commands =
+        [| Start
+           Stop
+           Restart
+           RedFlag
+           OpenPitLane
+           ClosePitLane
+           ChangeProposedStartTime |]
 
     [<CLIMutable>]
     type RaceStatusUpdateInput =
         { Command: string
-          ProposedRaceStartTime : DateTimeOffset option }
+          ProposedRaceStartTime: DateTimeOffset option }
         member this.HasErrors() =
             let statusValidation =
                 match Commands
@@ -75,16 +97,19 @@ module InputModel =
                 | true -> None
                 | false ->
                     let commands = String.Join(" or ", Commands)
-                    Some (sprintf "Status needs to be %s" commands)
-                    
-            let proposedRaceStartTimeValidation = match this.Command with
-                                                  | ChangeProposedStartTime ->
-                                                      match this.ProposedRaceStartTime with
-                                                      | Some _ -> None
-                                                      | None -> Some "A proposed start time is required"
-                                                  | _ -> None
+                    Some(sprintf "Status needs to be %s" commands)
 
-            [| statusValidation; proposedRaceStartTimeValidation |] |> Array.choose id
+            let proposedRaceStartTimeValidation =
+                match this.Command with
+                | ChangeProposedStartTime ->
+                    match this.ProposedRaceStartTime with
+                    | Some _ -> None
+                    | None -> Some "A proposed start time is required"
+                | _ -> None
+
+            [| statusValidation
+               proposedRaceStartTimeValidation |]
+            |> Array.choose id
 
         interface IProblemDetailsValidation<RaceStatusUpdateInput> with
             member this.Validate path =

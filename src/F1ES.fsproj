@@ -4,6 +4,7 @@
         <TargetFramework>netcoreapp3.1</TargetFramework>
     </PropertyGroup>
     <ItemGroup>
+        <Compile Include="ProblemDetails.fs" />
         <Compile Include="AppConfiguration.fs" />
         <Compile Include="ModelBinding.fs" />
         <Compile Include="DomainModels\Team.fs" />
@@ -13,7 +14,6 @@
         <Compile Include="DomainEvents\Events.fs" />
         <Compile Include="Aggregates\Aggregates.fs" />
         <Compile Include="Projections\Projections.fs" />
-        <Compile Include="ProblemDetails.fs" />
         <Compile Include="InputModel.fs" />
         <Compile Include="CommandHandlers.fs" />
         <Compile Include="HTTPHandlers.fs" />
