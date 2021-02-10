@@ -19,7 +19,7 @@ module Aggregates =
         member val Cars = Array.empty<F1ES.Car> with get, set
         member val ProposedRaceStartTime: DateTimeOffset option = None with get, set
 
-        member this.Apply(event: RaceInitialised) =
+        member this.Apply(event: RaceScheduled) =
             this.RaceId <- Some(sprintf "%s - %s" event.Country event.Circuit)
 
             this.Cars <-

@@ -28,7 +28,7 @@ module Projections =
         inherit ViewProjection<Race, Guid>()
 
         do
-            self.ProjectEvent<RaceInitialised>(self.ApplyRaceInitialised)
+            self.ProjectEvent<RaceScheduled>(self.ApplyRaceInitialised)
             |> ignore
 
             self.ProjectEvent<RaceStarted>(self.ApplyRaceStarted)
@@ -54,7 +54,7 @@ module Projections =
             
             //self.DeleteEvent<RaceStarted>() |> ignore
 
-        member this.ApplyRaceInitialised (projection: Race) (event: RaceInitialised) =
+        member this.ApplyRaceInitialised (projection: Race) (event: RaceScheduled) =
             projection.Circuit <- event.Circuit
             projection.Country <- event.Country
             projection.RaceId <- Some(sprintf "%s - %s" event.Country event.Circuit)

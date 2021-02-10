@@ -5,7 +5,7 @@ module Events =
 
     type Car = {DriverName:string; Team:Team}
     
-    type RaceInitialised(country:string,circuit:string,cars:Car[]) =
+    type RaceScheduled(country:string,circuit:string,cars:Car[]) =
         member this.Cars = cars
         member this.Country = country
         member this.Circuit = circuit

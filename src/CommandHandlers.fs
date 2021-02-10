@@ -19,7 +19,7 @@ module CommandHandlers =
             session.Events.StartStream<RaceAggregate>()
 
         let raceinitialised =
-            RaceInitialised
+            RaceScheduled
                 (message.Country,
                  message.TrackName,
                  [| { Team = Mercedes
