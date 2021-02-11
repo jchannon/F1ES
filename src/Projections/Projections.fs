@@ -8,6 +8,7 @@ module Projections =
 
     type Race() =
         member val Id = Guid.Empty with get, set
+        member val Title: String option = None with get, set
         member val RaceId: String option = None with get, set
         member val RaceStarted: DateTimeOffset option = None with get, set
         member val RaceEnded: DateTimeOffset option = None with get, set
@@ -28,7 +29,7 @@ module Projections =
         inherit ViewProjection<Race, Guid>()
 
         do
-            self.ProjectEvent<RaceScheduled>(self.ApplyRaceInitialised)
+            self.ProjectEvent<RaceScheduled>(self.ApplyRaceScheduled)
             |> ignore
 
             self.ProjectEvent<RaceStarted>(self.ApplyRaceStarted)
@@ -54,7 +55,7 @@ module Projections =
             
             //self.DeleteEvent<RaceStarted>() |> ignore
 
-        member this.ApplyRaceInitialised (projection: Race) (event: RaceScheduled) =
+        member this.ApplyRaceScheduled (projection: Race) (event: RaceScheduled) =
             projection.Circuit <- event.Circuit
             projection.Country <- event.Country
             projection.RaceId <- Some(sprintf "%s - %s" event.Country event.Circuit)
@@ -75,6 +76,8 @@ module Projections =
                       DownforceChanged = Array.empty<DateTimeOffset option>
                       EnteredPitLane = Array.empty<DateTimeOffset option>
                       ExitedPitLane = Array.empty<DateTimeOffset option> })
+                
+            projection.Title <- Some event.Title
 
             ()
 

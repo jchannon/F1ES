@@ -18,7 +18,6 @@ module ModelBinding =
                 let! model = ctx.BindJsonAsync<'T>()
                 return model.Validate(ctx.Request.Path.ToString())
 
-            //catch json exception parse missing field and look for a : to get property name out
             with
             | :? JsonException as jsonexception when jsonexception.Message.Contains
                                                          ("missing field", StringComparison.OrdinalIgnoreCase) ->

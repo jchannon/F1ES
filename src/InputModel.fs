@@ -5,13 +5,20 @@ module InputModel =
     open F1ES.ModelBinding
     open Giraffe
     open ProblemDetails
+    
+    [<CLIMutable>]
+    type CarInput = {
+        Team:Team
+        Driver:string
+    }
 
     [<CLIMutable>]
     type RaceInitialisedInput =
         { Country: string
           TrackName: string
           ScheduledStartTime: DateTimeOffset
-          Cars: Car list }
+          Cars: CarInput list
+          Title: string }
         member this.HasErrors() =
 
             let trackValidation =
@@ -31,11 +38,15 @@ module InputModel =
                 match this.Cars with
                 | [] -> Some "Cars is required"
                 | _ -> None
+                
+            let titleValidation =
+                if String.IsNullOrWhiteSpace this.Title then Some "Title is required" else None
 
             [| trackValidation
                countryValidation
                scheduledStartTimeValidation
-               carsValidation |]
+               carsValidation
+               titleValidation |]
             |> Array.choose id
 
         //None

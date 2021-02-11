@@ -1,9 +1,12 @@
 namespace F1ES
 
 open System
+open System.Linq.Expressions
 open System.Text.Json
 open System.Text.Json.Serialization
+open F1ES.Aggregates
 open Giraffe.Serialization
+open Marten.Schema
 open Microsoft.AspNetCore.Builder
 open Microsoft.Extensions.Configuration
 open Microsoft.Extensions.DependencyInjection
@@ -14,6 +17,10 @@ open Marten
 open F1ES.HTTPHandlers
 open F1ES.Projections
 
+type FunAs() =
+    static member MyExpression<'T, 'TResult>(e: Expression<Func<'T, 'TResult>>) = [|e|]
+
+
 type Startup(configuration: IConfiguration) =
     let appConfiguration = AppConfiguration()
 
@@ -23,7 +30,7 @@ type Startup(configuration: IConfiguration) =
         choose [ route "/"
                  >=> GET
                  >=> text "There's no place like 127.0.0.1"
-                 route "/race" >=> POST >=> initializeRaceHandler
+                 route "/race" >=> POST >=> scheduleRaceHandler
                  GET >=> routef "/race/%O" getRaceHandler
                  POST >=> routef "/race/%O" updateRace ]
 
@@ -36,10 +43,13 @@ type Startup(configuration: IConfiguration) =
 
         services.AddSingleton<IJsonSerializer>(SystemTextJsonSerializer(options))
         |> ignore
-
+        
+        let foo = FunAs.MyExpression(fun (x:RaceAggregate) -> x.Title.Value:>obj)
+        
         services.AddMarten(fun x ->
             x.Connection(appConfiguration.ConnectionString)
-            x.Events.InlineProjections.Add<RaceProjection>()
+            x.Events.InlineProjections.AggregateStreamsWith<RaceAggregate>() |> ignore
+            x.Schema.For<RaceAggregate>().UniqueIndex(UniqueIndexType.Computed, foo) |> ignore
             )
         |> ignore
 

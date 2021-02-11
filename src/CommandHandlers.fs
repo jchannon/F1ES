@@ -10,29 +10,40 @@ module CommandHandlers =
     open F1ES.Aggregates
     open F1ES.Projections
     open System.Linq
+    open Npgsql
 
-    let handleRaceInitialised (store: IDocumentStore) message =
+    let handleRaceScheduled (store: IDocumentStore) message path =
 
         use session = store.OpenSession()
+        
+        try
+            let stream =
+                session.Events.StartStream<RaceAggregate>()
 
-        let stream =
-            session.Events.StartStream<RaceAggregate>()
+            let raceScheduled =
+                RaceScheduled
+                    (message.Country,
+                     message.TrackName,
+                     [| { Team = Mercedes
+                          DriverName = "Lewis Hamilton" }
+                        { Team = Mercedes
+                          DriverName = "Valtteri Bottas" } |],
+                     message.Title)
 
-        let raceinitialised =
-            RaceScheduled
-                (message.Country,
-                 message.TrackName,
-                 [| { Team = Mercedes
-                      DriverName = "Lewis Hamilton" }
-                    { Team = Mercedes
-                      DriverName = "Valtteri Bottas" } |])
+            session.Events.Append(stream.Id, raceScheduled)
+            |> ignore
 
-        session.Events.Append(stream.Id, raceinitialised)
-        |> ignore
+            session.SaveChanges()
 
-        session.SaveChanges()
-
-        stream.Id
+            Ok stream.Id
+        with
+        | :? PostgresException ->
+                Error
+                    { Detail = "Please ensure you enter unique details for the race"
+                      Status = 422
+                      Title = "Race command failed"
+                      Instance = path
+                      Type = "https://example.net/validation-error" }
 
     let getRace (store: IDocumentStore) (streamId: Guid) =
         use session = store.OpenSession()

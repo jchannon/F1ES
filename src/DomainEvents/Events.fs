@@ -5,10 +5,11 @@ module Events =
 
     type Car = {DriverName:string; Team:Team}
     
-    type RaceScheduled(country:string,circuit:string,cars:Car[]) =
+    type RaceScheduled(country:string,circuit:string,cars:Car[],title:string) =
         member this.Cars = cars
         member this.Country = country
         member this.Circuit = circuit
+        member this.Title = title
         
         
     type RaceStarted(raceStarted:DateTimeOffset) =

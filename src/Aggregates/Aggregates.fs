@@ -7,6 +7,7 @@ module Aggregates =
 
     type RaceAggregate() =
         member val Id = Guid.Empty with get, set
+        member val Title: String option = None with get, set
         member val RaceId: String option = None with get, set
         member val RaceStarted: DateTimeOffset option = None with get, set
         member val RaceEnded: DateTimeOffset option = None with get, set
@@ -38,6 +39,8 @@ module Aggregates =
                       DownforceChanged = Array.empty<DateTimeOffset option>
                       EnteredPitLane = Array.empty<DateTimeOffset option>
                       ExitedPitLane = Array.empty<DateTimeOffset option> })
+                
+            this.Title <- Some event.Title
 
             ()
 
