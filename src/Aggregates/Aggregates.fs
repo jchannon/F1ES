@@ -17,7 +17,7 @@ module Aggregates =
         member val PitLaneClosed = Array.empty<DateTimeOffset option> with get, set
         member val PitLaneOpen: Boolean = true with get, set
         member val Cars = Array.empty<F1ES.Car> with get, set
-        member val ProposedRaceStartTime: DateTimeOffset option = None with get, set
+        member val ScheduledStartTime: DateTimeOffset option = None with get, set
 
         member this.Apply(event: RaceScheduled) =
             this.RaceId <- Some(sprintf "%s - %s" event.Country event.Circuit)
@@ -67,6 +67,6 @@ module Aggregates =
             this.PitLaneOpen <- false
             ()
             
-        member this.Apply(event: ProposedRaceStartTimeChanged) =
-            this.ProposedRaceStartTime <- Some event.ProposedRaceStartTime
+        member this.Apply(event: RaceDelayed) =
+            this.ScheduledStartTime <- Some event.ProposedRaceStartTime
             ()

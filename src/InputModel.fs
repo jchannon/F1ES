@@ -10,7 +10,7 @@ module InputModel =
     type RaceInitialisedInput =
         { Country: string
           TrackName: string
-          ProposedRaceStartTime: DateTimeOffset
+          ScheduledStartTime: DateTimeOffset
           Cars: Car list }
         member this.HasErrors() =
 
@@ -22,8 +22,8 @@ module InputModel =
             let countryValidation =
                 if String.IsNullOrWhiteSpace this.Country then Some "Country is required" else None
 
-            let proposedRaceStartTimeValidation =
-                if this.ProposedRaceStartTime = DateTimeOffset.MinValue
+            let scheduledStartTimeValidation =
+                if this.ScheduledStartTime = DateTimeOffset.MinValue
                 then Some "ProposedRaceStartTime is required"
                 else None
 
@@ -34,7 +34,7 @@ module InputModel =
 
             [| trackValidation
                countryValidation
-               proposedRaceStartTimeValidation
+               scheduledStartTimeValidation
                carsValidation |]
             |> Array.choose id
 

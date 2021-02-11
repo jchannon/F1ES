@@ -20,7 +20,7 @@ module Projections =
         member val Cars = Array.empty<F1ES.Car> with get, set
         member val Circuit: string = "" with get, set
         member val Country: string = "" with get, set
-        member val ProposedRaceStartTime: DateTimeOffset option = None with get, set
+        member val ScheduledStartTime: DateTimeOffset option = None with get, set
 
 
 
@@ -49,7 +49,7 @@ module Projections =
             self.ProjectEvent<PitLaneClosed>(self.ApplyPitLaneClosed)
             |> ignore
             
-            self.ProjectEvent<ProposedRaceStartTimeChanged>(self.ApplyProposedRaceStartTimeChanged)
+            self.ProjectEvent<RaceDelayed>(self.ApplyRaceDelayed)
             |> ignore
             
             //self.DeleteEvent<RaceStarted>() |> ignore
@@ -104,6 +104,6 @@ module Projections =
             projection.PitLaneOpen <- false
             ()
             
-        member this.ApplyProposedRaceStartTimeChanged (projection: Race) (event: ProposedRaceStartTimeChanged) =
-            projection.ProposedRaceStartTime <- Some event.ProposedRaceStartTime
+        member this.ApplyRaceDelayed (projection: Race) (event: RaceDelayed) =
+            projection.ScheduledStartTime <- Some event.ProposedRaceStartTime
             ()

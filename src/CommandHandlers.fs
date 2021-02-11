@@ -268,7 +268,7 @@ module CommandHandlers =
                   Type = "https://example.net/validation-error" }
         | None, None ->
             let proposedRaceStartTimeChanged =
-                ProposedRaceStartTimeChanged(model.ProposedRaceStartTime.Value)
+                RaceDelayed(model.ProposedRaceStartTime.Value)
 
             session.Events.Append(streamId, proposedRaceStartTimeChanged)
             |> ignore

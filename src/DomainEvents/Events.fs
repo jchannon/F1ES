@@ -29,5 +29,5 @@ module Events =
     type PitLaneClosed(pitLaneClosed:DateTimeOffset) =
         member this.PitLaneClosed = pitLaneClosed
         
-    type ProposedRaceStartTimeChanged(proposedRaceStartTime:DateTimeOffset)=
+    type RaceDelayed(proposedRaceStartTime:DateTimeOffset)=
         member this.ProposedRaceStartTime = proposedRaceStartTime
