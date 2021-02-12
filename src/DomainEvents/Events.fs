@@ -3,13 +3,13 @@ namespace F1ES
 module Events =
     open System
 
-    type Car = {DriverName:string; Team:Team}
     
-    type RaceScheduled(country:string,circuit:string,cars:Car[],title:string) =
+    type RaceScheduled(country:string,circuit:string,cars:Car[],title:string, scheduledStartTime:DateTimeOffset) =
         member this.Cars = cars
         member this.Country = country
         member this.Circuit = circuit
         member this.Title = title
+        member this.ScheduledStartTime = scheduledStartTime
         
         
     type RaceStarted(raceStarted:DateTimeOffset) =

@@ -6,6 +6,10 @@ module InputModel =
     open Giraffe
     open ProblemDetails
     
+    type Team =
+        |Mercedes = 1
+        |RedBull = 2
+    
     [<CLIMutable>]
     type CarInput = {
         Team:Team
@@ -13,7 +17,7 @@ module InputModel =
     }
 
     [<CLIMutable>]
-    type RaceInitialisedInput =
+    type RaceScheduledInput =
         { Country: string
           TrackName: string
           ScheduledStartTime: DateTimeOffset
@@ -51,7 +55,7 @@ module InputModel =
 
         //None
 
-        interface IProblemDetailsValidation<RaceInitialisedInput> with
+        interface IProblemDetailsValidation<RaceScheduledInput> with
             member this.Validate path =
                 match this.HasErrors() with
                 | [||] -> Ok this

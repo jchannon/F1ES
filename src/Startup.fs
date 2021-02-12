@@ -18,7 +18,7 @@ open F1ES.HTTPHandlers
 open F1ES.Projections
 
 type FunAs() =
-    static member MyExpression<'T, 'TResult>(e: Expression<Func<'T, 'TResult>>) = [|e|]
+    static member MyExpression<'T, 'TResult>(e: Expression<Func<'T, 'TResult>>) = e
 
 
 type Startup(configuration: IConfiguration) =
@@ -38,19 +38,30 @@ type Startup(configuration: IConfiguration) =
 
         let options = JsonSerializerOptions()
         options.Converters.Add(JsonFSharpConverter())
+        options.Converters.Add(JsonStringEnumConverter())
         options.PropertyNameCaseInsensitive <- true
         //options.IgnoreNullValues <- true
 
         services.AddSingleton<IJsonSerializer>(SystemTextJsonSerializer(options))
         |> ignore
-        
-        let foo = FunAs.MyExpression(fun (x:RaceAggregate) -> x.Title.Value:>obj)
-        
+
+        let titleIndex =
+            FunAs.MyExpression(fun (x: RaceAggregate) -> x.Title :> obj)
+
         services.AddMarten(fun x ->
             x.Connection(appConfiguration.ConnectionString)
-            x.Events.InlineProjections.AggregateStreamsWith<RaceAggregate>() |> ignore
-            x.Schema.For<RaceAggregate>().UniqueIndex(UniqueIndexType.Computed, foo) |> ignore
-            )
+
+            x.Events.InlineProjections.AggregateStreamsWith<RaceAggregate>()
+            |> ignore
+
+            x.Events.InlineProjections.Add<RaceProjection>()
+
+            x
+                .Schema
+                .For<RaceAggregate>()
+                .UniqueIndex(UniqueIndexType.Computed, titleIndex)
+            |> ignore)
+
         |> ignore
 
         services.AddGiraffe() |> ignore

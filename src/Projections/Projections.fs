@@ -60,24 +60,10 @@ module Projections =
             projection.Country <- event.Country
             projection.RaceId <- Some(sprintf "%s - %s" event.Country event.Circuit)
 
-            projection.Cars <-
-                event.Cars
-                |> Array.map (fun x ->
-                    { Team = x.Team
-                      Driver =
-                          { Name = x.DriverName
-                            BlackFlagged = false
-                            PenaltyApplied = false
-                            PenaltyPointsAppied = 0
-                            Retired = false
-                            Crashed = false }
-                      TyreChanged = Array.empty<DateTimeOffset option>
-                      NoseChanged = Array.empty<DateTimeOffset option>
-                      DownforceChanged = Array.empty<DateTimeOffset option>
-                      EnteredPitLane = Array.empty<DateTimeOffset option>
-                      ExitedPitLane = Array.empty<DateTimeOffset option> })
+            projection.Cars <- event.Cars
                 
             projection.Title <- Some event.Title
+            projection.ScheduledStartTime <- Some event.ScheduledStartTime
 
             ()
 

@@ -15,7 +15,7 @@ module HTTPHandlers =
         fun (next: HttpFunc) (ctx: HttpContext) ->
             task {
 
-                let! model = tryBindJsonBody<RaceInitialisedInput> (ctx)
+                let! model = tryBindJsonBody<RaceScheduledInput> (ctx)
 
                 match model with
                 | Ok x ->

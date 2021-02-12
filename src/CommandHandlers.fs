@@ -10,25 +10,47 @@ module CommandHandlers =
     open F1ES.Aggregates
     open F1ES.Projections
     open System.Linq
+    open Marten.Exceptions
     open Npgsql
 
     let handleRaceScheduled (store: IDocumentStore) message path =
 
         use session = store.OpenSession()
-        
+
         try
             let stream =
                 session.Events.StartStream<RaceAggregate>()
+
+            let cars =
+                message.Cars
+                |> List.map (fun x ->
+                    { Driver =
+                          { Name = x.Driver
+                            BlackFlagged = false
+                            PenaltyApplied = false
+                            PenaltyPointsAppied = 0
+                            Retired = false
+                            Crashed = false }
+                      Team =
+                          match x.Team with
+                          | Team.Mercedes -> Mercedes
+                          | _ -> Mercedes
+                      TyreChanged = Array.empty<DateTimeOffset option>
+                      NoseChanged = Array.empty<DateTimeOffset option>
+                      DownforceChanged = Array.empty<DateTimeOffset option>
+                      EnteredPitLane = Array.empty<DateTimeOffset option>
+                      ExitedPitLane = Array.empty<DateTimeOffset option>
+
+                    })
+                |> Array.ofList
 
             let raceScheduled =
                 RaceScheduled
                     (message.Country,
                      message.TrackName,
-                     [| { Team = Mercedes
-                          DriverName = "Lewis Hamilton" }
-                        { Team = Mercedes
-                          DriverName = "Valtteri Bottas" } |],
-                     message.Title)
+                     cars,
+                     message.Title,
+                     message.ScheduledStartTime)
 
             session.Events.Append(stream.Id, raceScheduled)
             |> ignore
@@ -36,14 +58,13 @@ module CommandHandlers =
             session.SaveChanges()
 
             Ok stream.Id
-        with
-        | :? PostgresException ->
-                Error
-                    { Detail = "Please ensure you enter unique details for the race"
-                      Status = 422
-                      Title = "Race command failed"
-                      Instance = path
-                      Type = "https://example.net/validation-error" }
+        with :? MartenCommandException ->
+            Error
+                { Detail = "Please ensure you enter unique details for the race"
+                  Status = 422
+                  Title = "Race command failed"
+                  Instance = path
+                  Type = "https://example.net/validation-error" }
 
     let getRace (store: IDocumentStore) (streamId: Guid) =
         use session = store.OpenSession()
