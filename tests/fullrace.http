@@ -1,0 +1,55 @@
+### Initilise race
+#@no-log
+POST http://localhost:5000/race
+Content-Type: application/json
+
+{"trackname":"Silverstone","country":"UK","scheduledstarttime": "2021-02-13T13:00:00Z","cars":[{"team": "Ferrari","driver": "Charles LeClerc"}], "title": "British GP"}
+
+> {% client.global.set("location",response.headers.valueOf("location")) %}
+
+### Change start time
+#@no-log
+POST {{location}}
+Content-Type: application/json
+
+{"command": "changestarttime","proposedracestarttime": "2021-02-13T14:00:00Z"}
+
+### Start race
+#@no-log
+POST {{location}}
+Content-Type: application/json
+
+{"command": "start"}
+
+### Restart race
+#@no-log
+POST {{location}}
+Content-Type: application/json
+
+{"command": "restart"}
+
+### Close pit lane
+#@no-log
+POST {{location}}
+Content-Type: application/json
+
+{"command": "closepitlane"}
+### Open pit lane
+#@no-log
+POST {{location}}
+Content-Type: application/json
+
+{"command": "openpitlane"}
+
+### Stop race
+#@no-log
+POST {{location}}
+Content-Type: application/json
+
+{"command": "stop"}
+
+
+### Get a race 
+#@no-log
+GET {{location}}
+
