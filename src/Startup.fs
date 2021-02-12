@@ -33,12 +33,11 @@ type Startup(configuration: IConfiguration) =
                  route "/race" >=> POST >=> scheduleRaceHandler
                  GET >=> routef "/race/%O" getRaceHandler
                  POST >=> routef "/race/%O" updateRace ]
-
+        
     member __.ConfigureServices(services: IServiceCollection) =
 
         let options = JsonSerializerOptions()
-        options.Converters.Add(JsonFSharpConverter())
-        options.Converters.Add(JsonStringEnumConverter())
+        options.Converters.Add(JsonFSharpConverter(JsonUnionEncoding.FSharpLuLike))
         options.PropertyNameCaseInsensitive <- true
         //options.IgnoreNullValues <- true
 
@@ -46,19 +45,20 @@ type Startup(configuration: IConfiguration) =
         |> ignore
 
         let titleIndex =
-            FunAs.MyExpression(fun (x: RaceAggregate) -> x.Title :> obj)
+            FunAs.MyExpression(fun (x: Race) -> x.Title :> obj)
+                    
 
         services.AddMarten(fun x ->
             x.Connection(appConfiguration.ConnectionString)
 
-            x.Events.InlineProjections.AggregateStreamsWith<RaceAggregate>()
+            x.Events.InlineProjections.AggregateStreamsWith<Race>()
             |> ignore
 
             x.Events.InlineProjections.Add<RaceProjection>()
 
             x
                 .Schema
-                .For<RaceAggregate>()
+                .For<Race>()
                 .UniqueIndex(UniqueIndexType.Computed, titleIndex)
             |> ignore)
 

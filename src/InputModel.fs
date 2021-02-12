@@ -5,11 +5,7 @@ module InputModel =
     open F1ES.ModelBinding
     open Giraffe
     open ProblemDetails
-    
-    type Team =
-        |Mercedes = 1
-        |RedBull = 2
-    
+       
     [<CLIMutable>]
     type CarInput = {
         Team:Team

@@ -3,7 +3,7 @@
 POST http://localhost:5000/race
 Content-Type: application/json
 
-{"trackname":"Silverstone","country":"UK","scheduledstarttime": "2021-02-09T21:05:24Z","cars":[{"team": "Mercedes","driver": "lewis hamilton"}], "title": "big gp ukpph"}
+{"trackname":"Silverstone","country":"UK","scheduledstarttime": "2021-02-09T21:05:24Z","cars":[{"team": "Ferrari","driver": "lewis hamilton"}], "title": "big gp ufgofgjhjklkpph"}
 
 > {% client.global.set("location",response.headers.valueOf("location")) %}
 

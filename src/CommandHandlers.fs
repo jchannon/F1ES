@@ -18,8 +18,7 @@ module CommandHandlers =
         use session = store.OpenSession()
 
         try
-            let stream =
-                session.Events.StartStream<RaceAggregate>()
+            let stream = session.Events.StartStream<Race>()
 
             let cars =
                 message.Cars
@@ -31,10 +30,8 @@ module CommandHandlers =
                             PenaltyPointsAppied = 0
                             Retired = false
                             Crashed = false }
-                      Team =
-                          match x.Team with
-                          | Team.Mercedes -> Mercedes
-                          | _ -> Mercedes
+                      Team = x.Team
+                          
                       TyreChanged = Array.empty<DateTimeOffset option>
                       NoseChanged = Array.empty<DateTimeOffset option>
                       DownforceChanged = Array.empty<DateTimeOffset option>
@@ -45,12 +42,7 @@ module CommandHandlers =
                 |> Array.ofList
 
             let raceScheduled =
-                RaceScheduled
-                    (message.Country,
-                     message.TrackName,
-                     cars,
-                     message.Title,
-                     message.ScheduledStartTime)
+                RaceScheduled(message.Country, message.TrackName, cars, message.Title, message.ScheduledStartTime)
 
             session.Events.Append(stream.Id, raceScheduled)
             |> ignore
@@ -70,7 +62,7 @@ module CommandHandlers =
         use session = store.OpenSession()
 
         session
-            .Query<Race>()
+            .Query<RaceSummary>()
             .Where(fun x -> x.Id = streamId)
             .Single()
 
@@ -78,7 +70,7 @@ module CommandHandlers =
         use session = store.OpenSession()
 
         let race =
-            session.Events.AggregateStream<RaceAggregate>(streamId)
+            session.Events.AggregateStream<Race>(streamId)
 
         match race.RaceStarted, race.RaceEnded with
         | Some _, Some _
@@ -112,7 +104,7 @@ module CommandHandlers =
         use session = store.OpenSession()
 
         let race =
-            session.Events.AggregateStream<RaceAggregate>(streamId)
+            session.Events.AggregateStream<Race>(streamId)
 
         match race.RaceStarted, race.RaceEnded with
         | Some _, Some _ ->
@@ -149,7 +141,7 @@ module CommandHandlers =
         use session = store.OpenSession()
 
         let race =
-            session.Events.AggregateStream<RaceAggregate>(streamId)
+            session.Events.AggregateStream<Race>(streamId)
 
         match race.RaceStarted, race.RaceEnded with
         | Some _, Some _ ->
@@ -186,7 +178,7 @@ module CommandHandlers =
         use session = store.OpenSession()
 
         let race =
-            session.Events.AggregateStream<RaceAggregate>(streamId)
+            session.Events.AggregateStream<Race>(streamId)
 
         match race.RedFlaggedTime, race.RaceStarted, race.RaceEnded with
 
@@ -225,7 +217,7 @@ module CommandHandlers =
         use session = store.OpenSession()
 
         let race =
-            session.Events.AggregateStream<RaceAggregate>(streamId)
+            session.Events.AggregateStream<Race>(streamId)
 
         match race.PitLaneOpen with
         | false ->
@@ -249,7 +241,7 @@ module CommandHandlers =
         use session = store.OpenSession()
 
         let race =
-            session.Events.AggregateStream<RaceAggregate>(streamId)
+            session.Events.AggregateStream<Race>(streamId)
 
         match race.PitLaneOpen with
         | true ->
@@ -273,7 +265,7 @@ module CommandHandlers =
         use session = store.OpenSession()
 
         let race =
-            session.Events.AggregateStream<RaceAggregate>(streamId)
+            session.Events.AggregateStream<Race>(streamId)
 
         match race.RaceStarted, race.RaceEnded with
         | Some _, Some _ ->

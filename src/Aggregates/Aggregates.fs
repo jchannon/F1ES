@@ -5,7 +5,7 @@ module Aggregates =
     open System
     open F1ES.Events
 
-    type RaceAggregate() =
+    type Race() =
         member val Id = Guid.Empty with get, set
         member val Title: String option = None with get, set
         member val RaceId: String option = None with get, set
