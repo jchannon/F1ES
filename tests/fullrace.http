@@ -3,9 +3,10 @@
 POST http://localhost:5000/race
 Content-Type: application/json
 
-{"trackname":"Silverstone","country":"UK","scheduledstarttime": "2021-02-13T13:00:00Z","cars":[{"team": "Ferrari","driver": "Charles LeClerc"}], "title": "British GP 2021"}
+{"trackname":"Silverstone","country":"UK","scheduledstarttime": "2021-02-13T13:00:00Z","cars":[{"team": "Ferrari","driver": "Charles LeClerc"}], "title": "British GP 2022"}
 
-> {% client.global.set("location",response.headers.valueOf("location")) %}
+> {% 
+client.global.set("location",response.headers.valueOf("location")) %}
 
 ### Change start time
 #@no-log

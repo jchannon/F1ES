@@ -43,14 +43,6 @@ module HTTPHandlers =
                 | Error errorHandler -> return! errorHandler next ctx
             }
 
-    type RaceSummaryRepresentation() =
-        inherit Hallo.Hal<RaceSummary>()
-
-        interface Hallo.IHalLinks<RaceSummary> with
-            member this.LinksFor(resource) =
-                [| Hallo.Link(Hallo.Link.Self, (sprintf "/race/%O" (resource.Id.ToString()))) |]
-                |> Seq.ofArray
-
     let getRaceHandler (streamId: Guid): HttpHandler =
         fun (next: HttpFunc) (ctx: HttpContext) ->
             task {
