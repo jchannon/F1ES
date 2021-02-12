@@ -1,6 +1,7 @@
 namespace F1ES
 
 module HTTPHandlers =
+    open F1ES.Projections
     open ModelBinding
     open System
     open Giraffe
@@ -10,6 +11,7 @@ module HTTPHandlers =
     open Microsoft.Extensions.DependencyInjection
     open F1ES.InputModel
     open F1ES.ProblemDetails
+    open F1ES.Hal
 
     let scheduleRaceHandler =
         fun (next: HttpFunc) (ctx: HttpContext) ->
@@ -25,6 +27,7 @@ module HTTPHandlers =
 
                     let result =
                         CommandHandlers.handleRaceScheduled store x (ctx.Request.Path.ToString())
+
                     match result with
                     | Ok streamId ->
                         ctx.SetStatusCode 201
@@ -40,6 +43,14 @@ module HTTPHandlers =
                 | Error errorHandler -> return! errorHandler next ctx
             }
 
+    type RaceSummaryRepresentation() =
+        inherit Hallo.Hal<RaceSummary>()
+
+        interface Hallo.IHalLinks<RaceSummary> with
+            member this.LinksFor(resource) =
+                [| Hallo.Link(Hallo.Link.Self, (sprintf "/race/%O" (resource.Id.ToString()))) |]
+                |> Seq.ofArray
+
     let getRaceHandler (streamId: Guid): HttpHandler =
         fun (next: HttpFunc) (ctx: HttpContext) ->
             task {
@@ -47,31 +58,32 @@ module HTTPHandlers =
                     ctx.RequestServices.GetRequiredService<IDocumentStore>()
 
                 let returnedRace = CommandHandlers.getRace store streamId
-                //todo return links with link rels on how to update a race
-                //todo don't return a start link when the race has started
-                return! ctx.WriteJsonAsync returnedRace
+
+                return! halHandler returnedRace next ctx
             }
-            
+
     let updateRace (streamId: Guid): HttpHandler =
         fun (next: HttpFunc) (ctx: HttpContext) ->
             task {
                 let store =
                     ctx.RequestServices.GetRequiredService<IDocumentStore>()
-                    
+
                 let! model = tryBindJsonBody<RaceStatusUpdateInput> (ctx)
 
                 match model with
                 | Ok x ->
-                    let updateRaceResult = CommandHandlers.updateRace store streamId x (ctx.Request.Path.ToString())
+                    let updateRaceResult =
+                        CommandHandlers.updateRace store streamId x (ctx.Request.Path.ToString())
+
                     match updateRaceResult with
-                    |Ok _ ->
+                    | Ok _ ->
                         ctx.SetStatusCode 204
                         return! next ctx
-                    |Error e ->
-                        ctx.SetStatusCode e.Status 
+                    | Error e ->
+                        ctx.SetStatusCode e.Status
                         return! problemDetailsHandler e next ctx
-                    
+
                 | Error errorHandler -> return! errorHandler next ctx
 
-                
+
             }

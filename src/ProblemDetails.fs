@@ -16,11 +16,10 @@ module ProblemDetails =
     let problemDetailsHandler model: HttpHandler =
         fun (next: HttpFunc) (ctx: HttpContext) ->
             task {
-                ctx.SetHttpHeader "Content-Type" "application/problem+json"
+                ctx.SetContentType "application/problem+json"
                 let serializer = ctx.GetJsonSerializer()
 
                 return!
                     serializer.SerializeToBytes model
                     |> ctx.WriteBytesAsync
             }
-            

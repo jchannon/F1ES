@@ -33,7 +33,7 @@ type Startup(configuration: IConfiguration) =
                  route "/race" >=> POST >=> scheduleRaceHandler
                  GET >=> routef "/race/%O" getRaceHandler
                  POST >=> routef "/race/%O" updateRace ]
-        
+
     member __.ConfigureServices(services: IServiceCollection) =
 
         let options = JsonSerializerOptions()
@@ -46,7 +46,7 @@ type Startup(configuration: IConfiguration) =
 
         let titleIndex =
             FunAs.MyExpression(fun (x: Race) -> x.Title :> obj)
-                    
+
 
         services.AddMarten(fun x ->
             x.Connection(appConfiguration.ConnectionString)
@@ -62,6 +62,19 @@ type Startup(configuration: IConfiguration) =
                 .UniqueIndex(UniqueIndexType.Computed, titleIndex)
             |> ignore)
 
+        |> ignore
+        
+        let serializerOptions = JsonSerializerOptions()
+        serializerOptions.Converters.Add(Hallo.Serialization.HalRepresentationConverter())
+        serializerOptions.Converters.Add(Hallo.Serialization.LinksConverter())
+        serializerOptions.Converters.Add(JsonFSharpConverter(JsonUnionEncoding.FSharpLuLike))
+
+        services.AddSingleton(serializerOptions) |> ignore
+        
+        services.AddTransient<RaceSummaryRepresentation>()
+        |> ignore
+
+        services.AddTransient<Hallo.Hal<RaceSummary>, RaceSummaryRepresentation>()
         |> ignore
 
         services.AddGiraffe() |> ignore

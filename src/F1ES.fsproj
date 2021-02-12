@@ -4,6 +4,7 @@
         <TargetFramework>netcoreapp3.1</TargetFramework>
     </PropertyGroup>
     <ItemGroup>
+        <Compile Include="Hal.fs" />
         <Compile Include="ProblemDetails.fs" />
         <Compile Include="AppConfiguration.fs" />
         <Compile Include="ModelBinding.fs" />
@@ -28,6 +29,7 @@
     <ItemGroup>
         <PackageReference Include="FSharp.SystemTextJson" Version="0.14.8" />
         <PackageReference Include="Giraffe" Version="5.0.0-alpha-003" />
+        <PackageReference Include="Hallo" Version="2.1.0" />
         <PackageReference Include="Marten" Version="3.13.1" />
     </ItemGroup>
 </Project>
