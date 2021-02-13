@@ -5,12 +5,10 @@ module InputModel =
     open F1ES.ModelBinding
     open Giraffe
     open ProblemDetails
-       
+    open F1ES.Constants
+
     [<CLIMutable>]
-    type CarInput = {
-        Team:Team
-        Driver:string
-    }
+    type CarInput = { Team: Team; Driver: string }
 
     [<CLIMutable>]
     type RaceScheduledInput =
@@ -38,7 +36,7 @@ module InputModel =
                 match this.Cars with
                 | [] -> Some "Cars is required"
                 | _ -> None
-                
+
             let titleValidation =
                 if String.IsNullOrWhiteSpace this.Title then Some "Title is required" else None
 
@@ -67,27 +65,6 @@ module InputModel =
 
                     Error(RequestErrors.unprocessableEntity (problemDetailsHandler problemDetails)) //TODO Problem Details response
 
-    [<Literal>]
-    let Start = "start"
-
-    [<Literal>]
-    let Stop = "stop"
-
-    [<Literal>]
-    let Restart = "restart"
-
-    [<Literal>]
-    let RedFlag = "redflag"
-
-    [<Literal>]
-    let OpenPitLane = "openpitlane"
-
-    [<Literal>]
-    let ClosePitLane = "closepitlane"
-
-    [<Literal>]
-    let ChangeProposedStartTime = "changestarttime"
-
     let Commands =
         [| Start
            Stop
@@ -95,7 +72,7 @@ module InputModel =
            RedFlag
            OpenPitLane
            ClosePitLane
-           ChangeProposedStartTime |]
+           DelayStartTime |]
 
     [<CLIMutable>]
     type RaceStatusUpdateInput =
@@ -112,7 +89,7 @@ module InputModel =
 
             let proposedRaceStartTimeValidation =
                 match this.Command with
-                | ChangeProposedStartTime ->
+                | DelayStartTime ->
                     match this.ProposedRaceStartTime with
                     | Some _ -> None
                     | None -> Some "A proposed start time is required"
@@ -136,4 +113,4 @@ module InputModel =
                           Instance = path
                           Type = "https://example.net/validation-error" }
 
-                    Error(RequestErrors.unprocessableEntity (problemDetailsHandler problemDetails)) 
+                    Error(RequestErrors.unprocessableEntity (problemDetailsHandler problemDetails))

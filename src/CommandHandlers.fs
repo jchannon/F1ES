@@ -11,7 +11,7 @@ module CommandHandlers =
     open F1ES.Projections
     open System.Linq
     open Marten.Exceptions
-    open Npgsql
+    open F1ES.Constants
 
     let handleRaceScheduled (store: IDocumentStore) message path =
 
@@ -261,7 +261,7 @@ module CommandHandlers =
                   Instance = path
                   Type = "https://example.net/validation-error" }
 
-    let changeProposedStartTime (store: IDocumentStore) (streamId: Guid) model (path: string) =
+    let delayStartTime (store: IDocumentStore) (streamId: Guid) model (path: string) =
         use session = store.OpenSession()
 
         let race =
@@ -312,7 +312,7 @@ module CommandHandlers =
             | RedFlag -> redflagRace store streamId path
             | OpenPitLane -> openPitLane store streamId path
             | ClosePitLane -> closePitLane store streamId path
-            | ChangeProposedStartTime -> changeProposedStartTime store streamId model path
+            | DelayStartTime -> delayStartTime store streamId model path
             | _ ->
                 Error
                     { Detail = "Race command failed, unknown command"

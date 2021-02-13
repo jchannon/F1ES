@@ -3,7 +3,7 @@
 POST http://localhost:5000/race
 Content-Type: application/json
 
-{"trackname":"Silverstone","country":"UK","scheduledstarttime": "2021-02-09T21:05:24Z","cars":[{"team": "Mercedes","driver": "Lewis Hamilton"}], "title": "British GP 2021222ef"}
+{"trackname":"Silverstone","country":"UK","scheduledstarttime": "2021-02-09T21:05:24Z","cars":[{"team": "Mercedes","driver": "Lewis Hamilton"}], "title": "British GP 2021222efp"}
 
 > {% client.global.set("location",response.headers.valueOf("location")) %}
 
@@ -54,7 +54,7 @@ Content-Type: application/json
 POST {{location}}
 Content-Type: application/json
 
-{"command": "changestarttime","proposedracestarttime": "2021-02-09T21:05:24Z"}
+{"command": "delay","proposedracestarttime": "2021-02-09T21:05:24Z"}
 
 ### Get a race 
 #@no-log
