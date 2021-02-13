@@ -29,16 +29,16 @@ type Startup(configuration: IConfiguration) =
     let webApp =
         choose [ route "/"
                  >=> GET
-                 >=> text "There's no place like 127.0.0.1"
+                 >=> text "There's no place like 127.0.0.1" //TODO Home Document application/json-home?
                  
                  route "/race" >=> POST >=> scheduleRaceHandler
-                 
+                 route "/race" >=> OPTIONS >=> optionsHandler
                  
                  GET_HEAD >=> routef "/race/%O" getRaceHandler
                  POST >=> routef "/race/%O" updateRace
                  OPTIONS >=> routef "/race/%O" optionsRaceHandler
                  
-                 
+                 GET_HEAD >=> routef "/race/%O/cars" getCarsHandler
                  
                  
                  
@@ -84,8 +84,14 @@ type Startup(configuration: IConfiguration) =
         
         services.AddTransient<RaceSummaryRepresentation>()
         |> ignore
+        
+//        services.AddTransient<RaceSummaryCarRepresentation>()
+//        |> ignore
 
         services.AddTransient<Hallo.Hal<RaceSummary>, RaceSummaryRepresentation>()
+        |> ignore
+        
+        services.AddTransient<Hallo.Hal<HalCars>, RaceSummaryCarRepresentation>()
         |> ignore
 
         services.AddGiraffe() |> ignore

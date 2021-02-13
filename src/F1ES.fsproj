@@ -15,11 +15,11 @@
         <Compile Include="DomainModels\Car.fs" />
         <Compile Include="DomainEvents\Events.fs" />
         <Compile Include="Aggregates\Aggregates.fs" />
-        <Compile Include="Projections\Projections.fs" />
-        <Compile Include="Projections\HalRepresentations.fs" />
         <Compile Include="InputModels.fs" />
+        <Compile Include="Projections\Projections.fs" />
         <Compile Include="CommandHandlers.fs" />
         <Compile Include="HTTPHandlers.fs" />
+        <Compile Include="HalRepresentations\HalRepresentations.fs" />
         <Compile Include="Startup.fs" />
         <Compile Include="Program.fs" />
         <Content Include="appsettings.json">

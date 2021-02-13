@@ -13,6 +13,13 @@ module HTTPHandlers =
     open F1ES.ProblemDetails
     open F1ES.Hal
 
+    let optionsHandler: HttpHandler =
+        fun (next: HttpFunc) (ctx: HttpContext) ->
+            task {
+                ctx.SetHttpHeader "Allow" "POST, OPTIONS,"
+                return! next ctx
+            }
+
     let scheduleRaceHandler =
         fun (next: HttpFunc) (ctx: HttpContext) ->
             task {
@@ -85,16 +92,21 @@ module HTTPHandlers =
                 return! next ctx
             }
 
+    type HalCars =
+        { ResourceOwner: string
+          Cars: Car array }
 
+    let getCarsHandler (streamId: Guid): HttpHandler =
+        fun (next: HttpFunc) (ctx: HttpContext) ->
+            task {
+                let store =
+                    ctx.RequestServices.GetRequiredService<IDocumentStore>()
 
+                let returnedRace = CommandHandlers.getRace store streamId
 
+                let halCars =
+                    { ResourceOwner = (sprintf "/race/%O/cars" streamId)
+                      Cars = returnedRace.Cars }
 
-
-
-
-
-
-
-
-
-
+                return! halHandler halCars next ctx
+            }

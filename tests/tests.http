@@ -66,3 +66,12 @@ OPTIONS {{location}}
 
 ### f
 HEAD {{location}}
+
+
+### l
+
+OPTIONS http://localhost:5000/race
+
+### Get a race's cars
+#@no-log
+GET {{location}}/cars
