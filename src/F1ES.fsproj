@@ -17,7 +17,7 @@
         <Compile Include="Aggregates\Aggregates.fs" />
         <Compile Include="Projections\Projections.fs" />
         <Compile Include="Projections\HalRepresentations.fs" />
-        <Compile Include="InputModel.fs" />
+        <Compile Include="InputModels.fs" />
         <Compile Include="CommandHandlers.fs" />
         <Compile Include="HTTPHandlers.fs" />
         <Compile Include="Startup.fs" />

@@ -1,6 +1,6 @@
 namespace F1ES
 
-module InputModel =
+module InputModels =
     open System
     open F1ES.ModelBinding
     open Giraffe

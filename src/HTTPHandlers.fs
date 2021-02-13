@@ -9,7 +9,7 @@ module HTTPHandlers =
     open Microsoft.AspNetCore.Http
     open FSharp.Control.Tasks.V2.ContextInsensitive
     open Microsoft.Extensions.DependencyInjection
-    open F1ES.InputModel
+    open F1ES.InputModels
     open F1ES.ProblemDetails
     open F1ES.Hal
 
@@ -76,6 +76,25 @@ module HTTPHandlers =
                         return! problemDetailsHandler e next ctx
 
                 | Error errorHandler -> return! errorHandler next ctx
-
-
             }
+
+    let optionsRaceHandler (streamId: Guid): HttpHandler =
+        fun (next: HttpFunc) (ctx: HttpContext) ->
+            task {
+                ctx.SetHttpHeader "Allow" "GET, POST, OPTIONS, HEAD"
+                return! next ctx
+            }
+
+
+
+
+
+
+
+
+
+
+
+
+
+

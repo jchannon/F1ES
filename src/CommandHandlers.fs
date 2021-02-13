@@ -5,7 +5,7 @@ module CommandHandlers =
     open System
     open F1ES.Events
     open Marten
-    open F1ES.InputModel
+    open F1ES.InputModels
     open F1ES.ProblemDetails
     open F1ES.Aggregates
     open F1ES.Projections

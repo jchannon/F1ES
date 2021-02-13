@@ -60,3 +60,9 @@ Content-Type: application/json
 #@no-log
 GET {{location}}
 
+
+### f
+OPTIONS {{location}}
+
+### f
+HEAD {{location}}
