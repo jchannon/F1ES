@@ -15,7 +15,6 @@ module InputModels =
         { Country: string
           TrackName: string
           ScheduledStartTime: DateTimeOffset
-          Cars: CarInput list
           Title: string }
         member this.HasErrors() =
 
@@ -32,22 +31,14 @@ module InputModels =
                 then Some "ProposedRaceStartTime is required"
                 else None
 
-            let carsValidation =
-                match this.Cars with
-                | [] -> Some "Cars is required"
-                | _ -> None
-
             let titleValidation =
                 if String.IsNullOrWhiteSpace this.Title then Some "Title is required" else None
 
             [| trackValidation
                countryValidation
                scheduledStartTimeValidation
-               carsValidation
                titleValidation |]
             |> Array.choose id
-
-        //None
 
         interface IProblemDetailsValidation<RaceScheduledInput> with
             member this.Validate path =
@@ -63,7 +54,7 @@ module InputModels =
                           Instance = path
                           Type = "https://example.net/validation-error" }
 
-                    Error(RequestErrors.unprocessableEntity (problemDetailsHandler problemDetails)) //TODO Problem Details response
+                    Error(RequestErrors.unprocessableEntity (problemDetailsHandler problemDetails))
 
     let Commands =
         [| Start
@@ -100,6 +91,34 @@ module InputModels =
             |> Array.choose id
 
         interface IProblemDetailsValidation<RaceStatusUpdateInput> with
+            member this.Validate path =
+                match this.HasErrors() with
+                | [||] -> Ok this
+                | x ->
+                    let errors = String.Join(",", x)
+
+                    let problemDetails =
+                        { Detail = errors
+                          Status = 422
+                          Title = "Model validation failed"
+                          Instance = path
+                          Type = "https://example.net/validation-error" }
+
+                    Error(RequestErrors.unprocessableEntity (problemDetailsHandler problemDetails))
+
+    [<CLIMutable>]
+    type RegisterCarInput =
+        { Cars: CarInput list }
+        member this.HasErrors() =
+
+            let carsValidation =
+                match this.Cars with
+                | [] -> Some "Cars is required"
+                | _ -> None
+
+            [| carsValidation |] |> Array.choose id
+
+        interface IProblemDetailsValidation<RegisterCarInput> with
             member this.Validate path =
                 match this.HasErrors() with
                 | [||] -> Ok this

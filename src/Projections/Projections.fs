@@ -34,34 +34,34 @@ module Projections =
 
             self.ProjectEvent<RaceStarted>(self.ApplyRaceStarted)
             |> ignore
-            
+
             self.ProjectEvent<RaceEnded>(self.ApplyRaceEnded)
             |> ignore
-            
+
             self.ProjectEvent<RaceRedFlagged>(self.ApplyRaceRedFlagged)
             |> ignore
-            
+
             self.ProjectEvent<RaceRestarted>(self.ApplyRaceRestarted)
             |> ignore
-            
+
             self.ProjectEvent<PitLaneOpened>(self.ApplyPitLaneOpened)
             |> ignore
-            
+
             self.ProjectEvent<PitLaneClosed>(self.ApplyPitLaneClosed)
             |> ignore
-            
+
             self.ProjectEvent<RaceDelayed>(self.ApplyRaceDelayed)
             |> ignore
-            
-            //self.DeleteEvent<RaceStarted>() |> ignore
+
+            self.ProjectEvent<CarRegistered>(self.ApplyCarRegistered)
+            |> ignore
+
+        //self.DeleteEvent<RaceStarted>() |> ignore
 
         member this.ApplyRaceScheduled (projection: RaceSummary) (event: RaceScheduled) =
             projection.Circuit <- event.Circuit
             projection.Country <- event.Country
             projection.RaceId <- sprintf "%s - %s" event.Country event.Circuit
-
-            projection.Cars <- event.Cars
-                
             projection.Title <- event.Title
             projection.ScheduledStartTime <- event.ScheduledStartTime
 
@@ -92,7 +92,11 @@ module Projections =
             projection.PitLaneClosed <- Array.append projection.PitLaneClosed [| Some event.PitLaneClosed |]
             projection.PitLaneOpen <- false
             ()
-            
+
         member this.ApplyRaceDelayed (projection: RaceSummary) (event: RaceDelayed) =
             projection.ScheduledStartTime <- event.ProposedRaceStartTime
+            ()
+
+        member this.ApplyCarRegistered (projection: RaceSummary) (event: CarRegistered) =
+            projection.Cars <- event.Cars
             ()

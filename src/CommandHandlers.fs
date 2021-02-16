@@ -13,36 +13,15 @@ module CommandHandlers =
     open Marten.Exceptions
     open F1ES.Constants
 
-    let handleRaceScheduled (store: IDocumentStore) message path =
+    let handleRaceScheduled (store: IDocumentStore) (message: RaceScheduledInput) path =
 
         use session = store.OpenSession()
 
         try
             let stream = session.Events.StartStream<Race>()
 
-            let cars =
-                message.Cars
-                |> List.map (fun x ->
-                    { Driver =
-                          { Name = x.Driver
-                            BlackFlagged = false
-                            PenaltyApplied = false
-                            PenaltyPointsAppied = 0
-                            Retired = false
-                            Crashed = false }
-                      Team = x.Team
-                          
-                      TyreChanged = Array.empty<DateTimeOffset option>
-                      NoseChanged = Array.empty<DateTimeOffset option>
-                      DownforceChanged = Array.empty<DateTimeOffset option>
-                      EnteredPitLane = Array.empty<DateTimeOffset option>
-                      ExitedPitLane = Array.empty<DateTimeOffset option>
-
-                    })
-                |> Array.ofList
-
             let raceScheduled =
-                RaceScheduled(message.Country, message.TrackName, cars, message.Title, message.ScheduledStartTime)
+                RaceScheduled(message.Country, message.TrackName, message.Title, message.ScheduledStartTime)
 
             session.Events.Append(stream.Id, raceScheduled)
             |> ignore
@@ -322,3 +301,37 @@ module CommandHandlers =
                       Type = "https://example.net/validation-error" }
 
         result
+
+    let registerCar (store: IDocumentStore) (streamId: Guid) (message: RegisterCarInput) path =
+        use session = store.OpenSession()
+
+        let cars =
+            message.Cars
+            |> List.map (fun x ->
+                { Driver =
+                      { Name = x.Driver
+                        BlackFlagged = false
+                        PenaltyApplied = false
+                        PenaltyPointsAppied = 0
+                        Retired = false
+                        Crashed = false }
+                  Team = x.Team
+
+                  TyreChanged = Array.empty<DateTimeOffset option>
+                  NoseChanged = Array.empty<DateTimeOffset option>
+                  DownforceChanged = Array.empty<DateTimeOffset option>
+                  EnteredPitLane = Array.empty<DateTimeOffset option>
+                  ExitedPitLane = Array.empty<DateTimeOffset option>
+                  Id = Guid.NewGuid()
+                })
+            |> Array.ofList
+
+        let carRegistered = CarRegistered(cars)
+
+        session.Events.Append(streamId, carRegistered)
+        |> ignore
+
+        session.SaveChanges()
+        Ok()
+        
+        //TODO check for already registered cars

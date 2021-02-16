@@ -39,6 +39,8 @@ type Startup(configuration: IConfiguration) =
                  OPTIONS >=> routef "/race/%O" optionsRaceHandler
                  
                  GET_HEAD >=> routef "/race/%O/cars" getCarsHandler
+                 POST >=> routef "/race/%O/cars" registerCarHandler
+                 GET_HEAD >=> routef "/race/%O/cars/%O" getCarHandler
                  
                  
                  
@@ -91,7 +93,10 @@ type Startup(configuration: IConfiguration) =
         services.AddTransient<Hallo.Hal<RaceSummary>, RaceSummaryRepresentation>()
         |> ignore
         
-        services.AddTransient<Hallo.Hal<HalCars>, RaceSummaryCarRepresentation>()
+        services.AddTransient<Hallo.Hal<HalCars>, RaceSummaryCarsRepresentation>()
+        |> ignore
+        
+        services.AddTransient<Hallo.Hal<HalCar>, RaceSummaryCarRepresentation>()
         |> ignore
 
         services.AddGiraffe() |> ignore

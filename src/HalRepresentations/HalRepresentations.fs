@@ -77,7 +77,7 @@ type ArrayRepresentation<'T>(id: string, itemLinks: IHalLinks<'T>) =
 
             links |> Seq.ofList
 
-type RaceSummaryCarRepresentation() =
+type RaceSummaryCarsRepresentation() =
     inherit Hal<HalCars>()
 
     interface IHalState<HalCars> with
@@ -88,6 +88,24 @@ type RaceSummaryCarRepresentation() =
         member this.EmbeddedFor(resource) = {| Cars = resource.Cars |} :> obj
 
     interface IHalLinks<HalCars> with
+        member this.LinksFor(resource) =
+
+            let links =
+                [ Link(Link.Self, resource.ResourceOwner) ]
+
+            links |> Seq.ofList
+            
+type RaceSummaryCarRepresentation() =
+    inherit Hal<HalCar>()
+
+    interface IHalState<HalCar> with
+        member this.StateFor(resource) =
+            resource.Car :> obj
+//
+//    interface IHalEmbedded<HalCar> with
+//        member this.EmbeddedFor(resource) = {| Cars = resource.Cars |} :> obj
+
+    interface IHalLinks<HalCar> with
         member this.LinksFor(resource) =
 
             let links =

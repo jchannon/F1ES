@@ -110,3 +110,51 @@ module HTTPHandlers =
 
                 return! halHandler halCars next ctx
             }
+
+    let registerCarHandler (streamId: Guid): HttpHandler =
+        fun (next: HttpFunc) (ctx: HttpContext) ->
+            task {
+                let! model = tryBindJsonBody<RegisterCarInput> (ctx)
+
+                match model with
+                | Ok x ->
+                    let store =
+                        ctx.RequestServices.GetRequiredService<IDocumentStore>()
+
+                    let result =
+                        CommandHandlers.registerCar store streamId x (ctx.Request.Path.ToString())
+
+                    match result with
+                    | Ok streamId ->
+                        ctx.SetStatusCode 201
+
+                        ctx.SetHttpHeader "Location" (sprintf "http://localhost:5000/race/%O" streamId)
+                        //TODO Set cache headers
+
+                        return! next ctx
+                    | Error e ->
+                        ctx.SetStatusCode e.Status
+                        return! (problemDetailsHandler e) next ctx
+
+                | Error errorHandler -> return! errorHandler next ctx
+            }
+
+    type HalCar = { ResourceOwner: string; Car: Car }
+
+    let getCarHandler (streamId: Guid, carId: Guid): HttpHandler =
+        fun (next: HttpFunc) (ctx: HttpContext) ->
+            task {
+                let store =
+                    ctx.RequestServices.GetRequiredService<IDocumentStore>()
+
+                let returnedRace = CommandHandlers.getRace store streamId
+
+                let halCars =
+                    { ResourceOwner = (sprintf "/race/%O/cars/%O" streamId carId)
+                      Car =
+                          returnedRace.Cars
+                          |> Array.find (fun x -> x.Id = carId) }
+
+                return! halHandler halCars next ctx
+            }
+

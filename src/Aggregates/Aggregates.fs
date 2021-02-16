@@ -22,11 +22,7 @@ module Aggregates =
 
         member this.Apply(event: RaceScheduled) =
             this.RaceId <- Some(sprintf "%s - %s" event.Country event.Circuit)
-
-            this.Cars <- event.Cars
-
             this.Title <- Some event.Title
-
             ()
 
         member this.Apply(event: RaceStarted) =
@@ -57,4 +53,8 @@ module Aggregates =
 
         member this.Apply(event: RaceDelayed) =
             this.ScheduledStartTime <- Some event.ProposedRaceStartTime
+            ()
+        
+        member this.Apply(event: CarRegistered) =
+            this.Cars <- event.Cars
             ()

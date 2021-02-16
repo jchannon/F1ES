@@ -9,4 +9,5 @@ type Car =
       NoseChanged: DateTimeOffset option []
       DownforceChanged: DateTimeOffset option []
       EnteredPitLane: DateTimeOffset option []
-      ExitedPitLane: DateTimeOffset option [] }
+      ExitedPitLane: DateTimeOffset option []
+      Id : Guid}
