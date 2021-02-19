@@ -30,22 +30,30 @@ type Startup(configuration: IConfiguration) =
         choose [ route "/"
                  >=> GET
                  >=> text "There's no place like 127.0.0.1" //TODO Home Document application/json-home?
-                 
+
                  route "/race" >=> POST >=> scheduleRaceHandler
                  route "/race" >=> OPTIONS >=> optionsHandler
-                 
+
                  GET_HEAD >=> routef "/race/%O" getRaceHandler
                  POST >=> routef "/race/%O" updateRace
                  OPTIONS >=> routef "/race/%O" optionsRaceHandler
-                 
+
                  GET_HEAD >=> routef "/race/%O/cars" getCarsHandler
                  POST >=> routef "/race/%O/cars" registerCarHandler
+                 OPTIONS >=> routef "/race/%O/cars" optionsRaceCarHandler
+
                  GET_HEAD >=> routef "/race/%O/cars/%O" getCarHandler
+                 OPTIONS >=> routef "/race/%O/cars/%O" optionsgetCarHandler
+
+                 route "/drivers" >=> POST >=> registerDriverHandler
+                 GET_HEAD >=> route "/drivers" >=> getDriversHandler
+                 route "/drivers" >=> OPTIONS >=> optionsDriversHandler
                  
-                 
-                 
-                 
-                 ]
+                 GET_HEAD >=> routef "/drivers/%O" getDriverHandler
+                 OPTIONS >=> routef "/drivers/%O" optionsDriverHandler
+
+
+                  ]
 
     member __.ConfigureServices(services: IServiceCollection) =
 
@@ -60,11 +68,17 @@ type Startup(configuration: IConfiguration) =
         let titleIndex =
             FunAs.MyExpression(fun (x: Race) -> x.Title :> obj)
 
+        let nameIndex =
+            FunAs.MyExpression(fun (x: Driver) -> x.Name :> obj)
+
 
         services.AddMarten(fun x ->
             x.Connection(appConfiguration.ConnectionString)
 
             x.Events.InlineProjections.AggregateStreamsWith<Race>()
+            |> ignore
+
+            x.Events.InlineProjections.AggregateStreamsWith<Driver>()
             |> ignore
 
             x.Events.InlineProjections.Add<RaceProjection>()
@@ -73,29 +87,36 @@ type Startup(configuration: IConfiguration) =
                 .Schema
                 .For<Race>()
                 .UniqueIndex(UniqueIndexType.Computed, titleIndex)
+            |> ignore
+
+
+            x
+                .Schema
+                .For<Driver>()
+                .UniqueIndex(UniqueIndexType.Computed, nameIndex)
             |> ignore)
 
         |> ignore
-        
+
         let serializerOptions = JsonSerializerOptions()
         serializerOptions.Converters.Add(Hallo.Serialization.HalRepresentationConverter())
         serializerOptions.Converters.Add(Hallo.Serialization.LinksConverter())
         serializerOptions.Converters.Add(JsonFSharpConverter(JsonUnionEncoding.FSharpLuLike))
 
         services.AddSingleton(serializerOptions) |> ignore
-        
+
         services.AddTransient<RaceSummaryRepresentation>()
         |> ignore
-        
-//        services.AddTransient<RaceSummaryCarRepresentation>()
+
+        //        services.AddTransient<RaceSummaryCarRepresentation>()
 //        |> ignore
 
         services.AddTransient<Hallo.Hal<RaceSummary>, RaceSummaryRepresentation>()
         |> ignore
-        
+
         services.AddTransient<Hallo.Hal<HalCars>, RaceSummaryCarsRepresentation>()
         |> ignore
-        
+
         services.AddTransient<Hallo.Hal<HalCar>, RaceSummaryCarRepresentation>()
         |> ignore
 

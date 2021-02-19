@@ -58,3 +58,15 @@ module Aggregates =
         member this.Apply(event: CarRegistered) =
             this.Cars <- event.Cars
             ()
+            
+            
+    type Driver() =
+        member val Id = Guid.Empty with get, set
+        member val Name: String = String.Empty with get, set
+        
+        member this.Apply(event: DriverRegistered) =
+          this.Name <- event.Name
+          ()
+            
+            
+    

@@ -4,10 +4,7 @@ module Events =
     open System
 
 
-    type RaceScheduled(country: string,
-                       circuit: string,
-                       title: string,
-                       scheduledStartTime: DateTimeOffset) =
+    type RaceScheduled(country: string, circuit: string, title: string, scheduledStartTime: DateTimeOffset) =
         member this.Country = country
         member this.Circuit = circuit
         member this.Title = title
@@ -37,3 +34,6 @@ module Events =
 
     type CarRegistered(cars: Car []) =
         member this.Cars = cars
+
+    type DriverRegistered(name: string) =
+        member this.Name = name

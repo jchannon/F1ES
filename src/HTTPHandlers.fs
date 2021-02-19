@@ -12,6 +12,7 @@ module HTTPHandlers =
     open F1ES.InputModels
     open F1ES.ProblemDetails
     open F1ES.Hal
+    open Microsoft.AspNetCore.Http.Extensions
 
     let optionsHandler: HttpHandler =
         fun (next: HttpFunc) (ctx: HttpContext) ->
@@ -39,7 +40,7 @@ module HTTPHandlers =
                     | Ok streamId ->
                         ctx.SetStatusCode 201
 
-                        ctx.SetHttpHeader "Location" (sprintf "http://localhost:5000/race/%O" streamId)
+                        ctx.SetHttpHeader "Location" (sprintf "%s/%O" (ctx.Request.GetEncodedUrl()) streamId)
                         //TODO Set cache headers
 
                         return! next ctx
@@ -125,10 +126,10 @@ module HTTPHandlers =
                         CommandHandlers.registerCar store streamId x (ctx.Request.Path.ToString())
 
                     match result with
-                    | Ok streamId ->
+                    | Ok carId ->
                         ctx.SetStatusCode 201
 
-                        ctx.SetHttpHeader "Location" (sprintf "http://localhost:5000/race/%O" streamId)
+                        ctx.SetHttpHeader "Location" (sprintf "%s/%O" (ctx.Request.GetEncodedUrl()) carId)
                         //TODO Set cache headers
 
                         return! next ctx
@@ -137,6 +138,13 @@ module HTTPHandlers =
                         return! (problemDetailsHandler e) next ctx
 
                 | Error errorHandler -> return! errorHandler next ctx
+            }
+
+    let optionsRaceCarHandler (streamId: Guid): HttpHandler =
+        fun (next: HttpFunc) (ctx: HttpContext) ->
+            task {
+                ctx.SetHttpHeader "Allow" "GET, POST, OPTIONS, HEAD"
+                return! next ctx
             }
 
     type HalCar = { ResourceOwner: string; Car: Car }
@@ -158,3 +166,72 @@ module HTTPHandlers =
                 return! halHandler halCars next ctx
             }
 
+    let optionsgetCarHandler (race: Guid, carId: Guid): HttpHandler =
+        fun (next: HttpFunc) (ctx: HttpContext) ->
+            task {
+                ctx.SetHttpHeader "Allow" "GET, OPTIONS, HEAD"
+                return! next ctx
+            }
+
+    let registerDriverHandler: HttpHandler =
+        fun (next: HttpFunc) (ctx: HttpContext) ->
+            task {
+                let! model = tryBindJsonBody<DriverInput> (ctx)
+
+                match model with
+                | Ok x ->
+
+                    let store =
+                        ctx.RequestServices.GetRequiredService<IDocumentStore>()
+
+                    let result =
+                        CommandHandlers.handleDriverRegistered store x (ctx.Request.Path.ToString())
+
+                    match result with
+                    | Ok streamId ->
+                        ctx.SetStatusCode 201
+
+                        ctx.SetHttpHeader "Location" (sprintf "%s/%O" (ctx.Request.GetEncodedUrl()) streamId)
+                        //TODO Set cache headers
+
+                        return! next ctx
+                    | Error e ->
+                        ctx.SetStatusCode e.Status
+                        return! (problemDetailsHandler e) next ctx
+
+                | Error errorHandler -> return! errorHandler next ctx
+            }
+
+    let getDriversHandler: HttpHandler =
+        fun (next: HttpFunc) (ctx: HttpContext) ->
+            task {
+                let store =
+                    ctx.RequestServices.GetRequiredService<IDocumentStore>()
+
+                let drivers = CommandHandlers.getDrivers store
+                return! json drivers next ctx
+            }
+            
+    let optionsDriversHandler:HttpHandler =
+        fun (next: HttpFunc) (ctx: HttpContext) ->
+            task {
+                ctx.SetHttpHeader "Allow" "GET, OPTIONS, HEAD, POST"
+                return! next ctx
+            }
+            
+    let getDriverHandler (driverId:Guid) : HttpHandler =
+        fun (next: HttpFunc) (ctx: HttpContext) ->
+            task {
+                let store =
+                    ctx.RequestServices.GetRequiredService<IDocumentStore>()
+
+                let driver = CommandHandlers.getDriverById store driverId
+                return! json driver next ctx
+            }
+            
+    let optionsDriverHandler (_:Guid):HttpHandler =
+        fun (next: HttpFunc) (ctx: HttpContext) ->
+            task {
+                ctx.SetHttpHeader "Allow" "GET, OPTIONS, HEAD"
+                return! next ctx
+            }

@@ -133,3 +133,31 @@ module InputModels =
                           Type = "https://example.net/validation-error" }
 
                     Error(RequestErrors.unprocessableEntity (problemDetailsHandler problemDetails))
+
+    [<CLIMutable>]
+    type DriverInput =
+        { Name: string }
+        member this.HasErrors() =
+
+            let nameValidation =
+                match String.IsNullOrWhiteSpace(this.Name) with
+                | true -> Some "Driver name is required"
+                | _ -> None
+
+            [| nameValidation |] |> Array.choose id
+
+        interface IProblemDetailsValidation<DriverInput> with
+            member this.Validate path =
+                match this.HasErrors() with
+                | [||] -> Ok this
+                | x ->
+                    let errors = String.Join(",", x)
+
+                    let problemDetails =
+                        { Detail = errors
+                          Status = 422
+                          Title = "Model validation failed"
+                          Instance = path
+                          Type = "https://example.net/validation-error" }
+
+                    Error(RequestErrors.unprocessableEntity (problemDetailsHandler problemDetails))

@@ -3,7 +3,7 @@
 POST http://localhost:5000/race
 Content-Type: application/json
 
-{"trackname":"Silverstone","country":"UK","scheduledstarttime": "2021-02-09T21:05:24Z", "title": "British GP 2e021222efssffp"}
+{"trackname":"Silverstone","country":"UK","scheduledstarttime": "2021-02-09T21:05:24Z", "title": "British GP 2021"}
 
 > {% client.global.set("location",response.headers.valueOf("location")) %}
 
@@ -89,3 +89,18 @@ Content-Type: application/json
 
 
 GET {{location}}/cars/edd488d5-7609-424c-9090-e0d01e8aad4c
+
+### Register driver
+#@no-log
+POST http://localhost:5000/drivers
+Content-Type: application/json
+
+{"name": "lewis hamiltonfsd"}
+
+### Get drivers
+#@no-log
+GET http://localhost:5000/drivers
+
+### Get driver
+#@no-log
+GET http://localhost:5000/drivers/0177ba18-975b-4570-a24c-e2c69a651160

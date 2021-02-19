@@ -4,6 +4,6 @@ type Driver =
         { Name: string
           BlackFlagged: bool
           PenaltyApplied: bool
-          PenaltyPointsAppied: int
+          PenaltyPointsApplied: int
           Retired: bool
           Crashed: bool }

@@ -304,6 +304,8 @@ module CommandHandlers =
 
     let registerCar (store: IDocumentStore) (streamId: Guid) (message: RegisterCarInput) path =
         use session = store.OpenSession()
+        
+        let carId = Guid.NewGuid()
 
         let cars =
             message.Cars
@@ -312,7 +314,7 @@ module CommandHandlers =
                       { Name = x.Driver
                         BlackFlagged = false
                         PenaltyApplied = false
-                        PenaltyPointsAppied = 0
+                        PenaltyPointsApplied = 0
                         Retired = false
                         Crashed = false }
                   Team = x.Team
@@ -322,7 +324,7 @@ module CommandHandlers =
                   DownforceChanged = Array.empty<DateTimeOffset option>
                   EnteredPitLane = Array.empty<DateTimeOffset option>
                   ExitedPitLane = Array.empty<DateTimeOffset option>
-                  Id = Guid.NewGuid()
+                  Id = carId
                 })
             |> Array.ofList
 
@@ -332,6 +334,41 @@ module CommandHandlers =
         |> ignore
 
         session.SaveChanges()
-        Ok()
+        Ok carId
         
         //TODO check for already registered cars
+        
+    let handleDriverRegistered  (store: IDocumentStore) (message: DriverInput) path =
+        use session = store.OpenSession()
+
+        try
+            let stream = session.Events.StartStream<Driver>()
+
+            let driverRegistered =
+                DriverRegistered(message.Name)
+
+            session.Events.Append(stream.Id, driverRegistered)
+            |> ignore
+
+            session.SaveChanges()
+
+            Ok stream.Id
+        with :? MartenCommandException ->
+            Error
+                { Detail = "Please ensure you enter a unique name for a driver"
+                  Status = 422
+                  Title = "Driver command failed"
+                  Instance = path
+                  Type = "https://example.net/validation-error" }
+        
+    
+    let getDrivers (store: IDocumentStore)  =
+        use session = store.OpenSession()
+
+        session
+            .Query<Driver>()
+            
+    let getDriverById (store: IDocumentStore) (driverId:Guid) =
+        use session = store.OpenSession()
+        
+        session.Query<Driver>().First(fun x -> x.Id = driverId)
