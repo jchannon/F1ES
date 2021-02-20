@@ -165,11 +165,35 @@ module HTTPHandlers =
 
                 return! halHandler halCars next ctx
             }
+            
+    let addCarCommandHandler (raceId: Guid, carId: Guid): HttpHandler =
+        fun (next: HttpFunc) (ctx: HttpContext) ->
+            task {
+                let store =
+                    ctx.RequestServices.GetRequiredService<IDocumentStore>()
+
+                let! model = tryBindJsonBody<CarStatusUpdateInput> (ctx)
+
+                match model with
+                | Ok x ->
+                    let updateCarResult =
+                        CommandHandlers.updateCar store raceId carId x (ctx.Request.Path.ToString())
+
+                    match updateCarResult with
+                    | Ok _ ->
+                        ctx.SetStatusCode 204
+                        return! next ctx
+                    | Error e ->
+                        ctx.SetStatusCode e.Status
+                        return! problemDetailsHandler e next ctx
+
+                | Error errorHandler -> return! errorHandler next ctx
+            }
 
     let optionsgetCarHandler (race: Guid, carId: Guid): HttpHandler =
         fun (next: HttpFunc) (ctx: HttpContext) ->
             task {
-                ctx.SetHttpHeader "Allow" "GET, OPTIONS, HEAD"
+                ctx.SetHttpHeader "Allow" "GET, OPTIONS, HEAD, POST"
                 return! next ctx
             }
 

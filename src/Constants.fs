@@ -23,3 +23,6 @@ module Constants =
 
     [<Literal>]
     let DelayStartTime = "delay"
+    
+    [<Literal>]
+    let EnterPitLane = "enterpitlane"

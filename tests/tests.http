@@ -3,7 +3,7 @@
 POST http://localhost:5000/race
 Content-Type: application/json
 
-{"trackname":"Silverstone","country":"UK","scheduledstarttime": "2021-02-09T21:05:24Z", "title": "British GP 2021"}
+{"trackname":"Silverstone","country":"UK","scheduledstarttime": "2021-02-09T21:05:24Z", "title": "French GP 2021"}
 
 > {% client.global.set("location",response.headers.valueOf("location")) %}
 
@@ -82,7 +82,7 @@ GET {{location}}/cars
 POST {{location}}/cars
 Content-Type: application/json
 
-{"cars":[{"team": "Ferrari","driverid": "0177bf8a-7d6c-4c3c-a621-4fb68f3806f8"}]}
+{"cars":[{"team": "Ferrari","driverid": "0177c05b-3304-43dd-9bfd-012c1b00eef3"}]}
 
 ### Get a car
 #@no-log
@@ -102,3 +102,10 @@ GET http://localhost:5000/drivers
 ### Get driver
 #@no-log
 GET http://localhost:5000/drivers/0177ba18-975b-4570-a24c-e2c69a651160
+
+### Car enters pit lane
+#@no-log
+POST {{location}}/cars/b2a8225f-212d-4336-aeba-6f0563085f94
+Content-Type: application/json
+
+{"command":"enterpitlane"}

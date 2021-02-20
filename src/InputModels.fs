@@ -106,6 +106,41 @@ module InputModels =
 
                     Error(RequestErrors.unprocessableEntity (problemDetailsHandler problemDetails))
 
+    let UpdateCarCommands = [| EnterPitLane |]
+
+    [<CLIMutable>]
+    type CarStatusUpdateInput =
+        { Command: string
+           }
+        member this.HasErrors() =
+            let statusValidation =
+                match UpdateCarCommands
+                      |> Array.exists (fun x -> x.Equals(this.Command, StringComparison.OrdinalIgnoreCase)) with
+                | true -> None
+                | false ->
+                    let commands = String.Join(" or ", Commands)
+                    Some(sprintf "Status needs to be %s" commands)
+
+            
+
+            [| statusValidation |] |> Array.choose id
+
+        interface IProblemDetailsValidation<CarStatusUpdateInput> with
+            member this.Validate path =
+                match this.HasErrors() with
+                | [||] -> Ok this
+                | x ->
+                    let errors = String.Join(",", x)
+
+                    let problemDetails =
+                        { Detail = errors
+                          Status = 422
+                          Title = "Model validation failed"
+                          Instance = path
+                          Type = "https://example.net/validation-error" }
+
+                    Error(RequestErrors.unprocessableEntity (problemDetailsHandler problemDetails))
+
     [<CLIMutable>]
     type RegisterCarInput =
         { Cars: CarInput list }

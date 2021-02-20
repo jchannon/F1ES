@@ -240,7 +240,7 @@ module CommandHandlers =
                   Instance = path
                   Type = "https://example.net/validation-error" }
 
-    let delayStartTime (store: IDocumentStore) (streamId: Guid) model (path: string) =
+    let delayStartTime (store: IDocumentStore) (streamId: Guid) (model:RaceStatusUpdateInput) (path: string) =
         use session = store.OpenSession()
 
         let race =
@@ -301,6 +301,56 @@ module CommandHandlers =
                       Type = "https://example.net/validation-error" }
 
         result
+        
+    let recordPitLaneEntry (store: IDocumentStore) (raceId: Guid) (carId:Guid) (path: string) =
+        use session = store.OpenSession()
+
+        let race =
+            session.Events.AggregateStream<Race>(raceId)
+
+        match race.RaceStarted, race.RaceEnded with
+        | Some _, Some _
+        | None, Some _ ->
+            Error
+                { Detail = "The race has already ended"
+                  Status = 409
+                  Title = "Car command failed"
+                  Instance = path
+                  Type = "https://example.net/validation-error" }
+        | Some _, None _ ->
+            //TODO Create proper URI for problem details
+           
+            let carEnteredPitLane = CarEnteredPitLane(carId,DateTimeOffset.UtcNow)
+
+
+            session.Events.Append(raceId, carEnteredPitLane)
+            |> ignore
+
+            session.SaveChanges()
+            Ok()
+        | None, None ->
+             Error
+                { Detail = "The race hasn't started"
+                  Status = 409
+                  Title = "Car command failed"
+                  Instance = path
+                  Type = "https://example.net/validation-error" }
+        
+    let updateCar (store: IDocumentStore) (raceId: Guid) (carId:Guid) (model: CarStatusUpdateInput) (path: string) =
+        use session = store.OpenSession()
+
+        let result =
+            match model.Command.ToLower() with
+            | EnterPitLane -> recordPitLaneEntry store raceId carId path
+            | _ ->
+                Error
+                    { Detail = "Car command failed, unknown command"
+                      Status = 409
+                      Title = "Car command failed"
+                      Instance = path
+                      Type = "https://example.net/validation-error" }
+
+        result
 
     let registerCar (store: IDocumentStore) (raceId: Guid) (message: RegisterCarInput) path =
         use session = store.OpenSession()
@@ -322,7 +372,7 @@ module CommandHandlers =
                   TyreChanged = Array.empty<DateTimeOffset option>
                   NoseChanged = Array.empty<DateTimeOffset option>
                   DownforceChanged = Array.empty<DateTimeOffset option>
-                  EnteredPitLane = Array.empty<DateTimeOffset option>
+                  EnteredPitLane = Array.empty<DateTimeOffset>
                   ExitedPitLane = Array.empty<DateTimeOffset option>
                   Id = carId
                 })

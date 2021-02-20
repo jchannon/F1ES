@@ -6,6 +6,10 @@ module Aggregates =
     open F1ES.Events
 
     type Race() =
+        let updateElement key f array =
+            array
+            |> Array.map (fun x -> if x.Id = key then f x else x)
+
         member val Id = Guid.Empty with get, set
         member val Title: String option = None with get, set
         member val RaceId: String option = None with get, set
@@ -54,19 +58,28 @@ module Aggregates =
         member this.Apply(event: RaceDelayed) =
             this.ScheduledStartTime <- Some event.ProposedRaceStartTime
             ()
-        
+
         member this.Apply(event: CarRegistered) =
             this.Cars <- event.Cars
             ()
-            
-            
+
+
+
+        member this.Apply(event: CarEnteredPitLane) =
+
+            this.Cars <-
+                this.Cars
+                |> updateElement event.CarId (fun x ->
+                       x.EnteredPitLane <- Array.append x.EnteredPitLane [| event.EntryTime |]
+                       x)
+
+            ()
+
+
     type Driver() =
         member val Id = Guid.Empty with get, set
         member val Name: String = String.Empty with get, set
-        
+
         member this.Apply(event: DriverRegistered) =
-          this.Name <- event.Name
-          ()
-            
-            
-    
+            this.Name <- event.Name
+            ()

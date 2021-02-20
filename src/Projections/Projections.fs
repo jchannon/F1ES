@@ -24,9 +24,12 @@ module Projections =
         member val ScheduledStartTime: DateTimeOffset = DateTimeOffset.MinValue with get, set
 
 
-
     type RaceProjection() as self =
         inherit ViewProjection<RaceSummary, Guid>()
+
+        let updateElement key f array =
+            array
+            |> Array.map (fun x -> if x.Id = key then f x else x)
 
         do
             self.ProjectEvent<RaceScheduled>(self.ApplyRaceScheduled)
@@ -54,6 +57,9 @@ module Projections =
             |> ignore
 
             self.ProjectEvent<CarRegistered>(self.ApplyCarRegistered)
+            |> ignore
+
+            self.ProjectEvent<CarEnteredPitLane>(self.ApplyCarEnteredPitLane)
             |> ignore
 
         //self.DeleteEvent<RaceStarted>() |> ignore
@@ -99,4 +105,13 @@ module Projections =
 
         member this.ApplyCarRegistered (projection: RaceSummary) (event: CarRegistered) =
             projection.Cars <- event.Cars
+            ()
+
+        member this.ApplyCarEnteredPitLane (projection: RaceSummary) (event: CarEnteredPitLane) =
+            projection.Cars <-
+                projection.Cars
+                |> updateElement event.CarId (fun x ->
+                       x.EnteredPitLane <- Array.append x.EnteredPitLane [| event.EntryTime |]
+                       x)
+
             ()

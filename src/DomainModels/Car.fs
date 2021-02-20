@@ -8,6 +8,6 @@ type Car =
       TyreChanged: DateTimeOffset option []
       NoseChanged: DateTimeOffset option []
       DownforceChanged: DateTimeOffset option []
-      EnteredPitLane: DateTimeOffset option []
+      mutable EnteredPitLane: DateTimeOffset []
       ExitedPitLane: DateTimeOffset option []
       Id : Guid}
