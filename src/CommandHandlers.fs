@@ -317,6 +317,13 @@ module CommandHandlers =
                   Title = "Car command failed"
                   Instance = path
                   Type = "https://example.net/validation-error" }
+        | None, None ->
+            Error
+                { Detail = "The race hasn't started"
+                  Status = 409
+                  Title = "Car command failed"
+                  Instance = path
+                  Type = "https://example.net/validation-error" }
         | Some _, None _ ->
             let car =
                 race.Cars |> Array.find (fun x -> x.Id = carId)
@@ -339,13 +346,7 @@ module CommandHandlers =
                       Title = "Car command failed"
                       Instance = path
                       Type = "https://example.net/validation-error" }
-        | None, None ->
-            Error
-                { Detail = "The race hasn't started"
-                  Status = 409
-                  Title = "Car command failed"
-                  Instance = path
-                  Type = "https://example.net/validation-error" }
+        
 
     let recordPitLaneExit (store: IDocumentStore) (raceId: Guid) (carId: Guid) (path: string) =
         use session = store.OpenSession()
@@ -358,6 +359,13 @@ module CommandHandlers =
         | None, Some _ ->
             Error
                 { Detail = "The race has already ended"
+                  Status = 409
+                  Title = "Car command failed"
+                  Instance = path
+                  Type = "https://example.net/validation-error" }
+        | None, None ->
+            Error
+                { Detail = "The race hasn't started"
                   Status = 409
                   Title = "Car command failed"
                   Instance = path
@@ -384,6 +392,22 @@ module CommandHandlers =
                       Title = "Car command failed"
                       Instance = path
                       Type = "https://example.net/validation-error" }
+    
+    let recordPitBoxEntry (store: IDocumentStore) (raceId: Guid) (carId: Guid) (path: string) =
+        use session = store.OpenSession()
+
+        let race =
+            session.Events.AggregateStream<Race>(raceId)
+
+        match race.RaceStarted, race.RaceEnded with
+        | Some _, Some _
+        | None, Some _ ->
+            Error
+                { Detail = "The race has already ended"
+                  Status = 409
+                  Title = "Car command failed"
+                  Instance = path
+                  Type = "https://example.net/validation-error" }
         | None, None ->
             Error
                 { Detail = "The race hasn't started"
@@ -391,6 +415,72 @@ module CommandHandlers =
                   Title = "Car command failed"
                   Instance = path
                   Type = "https://example.net/validation-error" }
+        | Some _, None _ ->
+            let car =
+                race.Cars |> Array.find (fun x -> x.Id = carId)
+
+            match car.InPitBox with
+            | false ->
+                let carEnteredPitBox =
+                    CarEnteredPitBox(carId, DateTimeOffset.UtcNow)
+
+                session.Events.Append(raceId, carEnteredPitBox)
+                |> ignore
+
+                session.SaveChanges()
+                Ok()
+            | true ->
+                Error
+                    { Detail = "The car is already in the pitbox"
+                      Status = 409
+                      Title = "Car command failed"
+                      Instance = path
+                      Type = "https://example.net/validation-error" }
+        
+
+    let recordPitBoxExit (store: IDocumentStore) (raceId: Guid) (carId: Guid) (path: string) =
+        use session = store.OpenSession()
+
+        let race =
+            session.Events.AggregateStream<Race>(raceId)
+
+        match race.RaceStarted, race.RaceEnded with
+        | Some _, Some _
+        | None, Some _ ->
+            Error
+                { Detail = "The race has already ended"
+                  Status = 409
+                  Title = "Car command failed"
+                  Instance = path
+                  Type = "https://example.net/validation-error" }
+        | None, None ->
+            Error
+                { Detail = "The race hasn't started"
+                  Status = 409
+                  Title = "Car command failed"
+                  Instance = path
+                  Type = "https://example.net/validation-error" }
+        | Some _, None _ ->
+            let car =
+                race.Cars |> Array.find (fun x -> x.Id = carId)
+
+            match car.InPitBox with
+            | true ->
+                let carExitedPitBox =
+                    CarExitedPitBox(carId, DateTimeOffset.UtcNow)
+
+                session.Events.Append(raceId, carExitedPitBox)
+                |> ignore
+
+                session.SaveChanges()
+                Ok()
+            | false ->
+                Error
+                    { Detail = "The car is not in the pitbox"
+                      Status = 409
+                      Title = "Car command failed"
+                      Instance = path
+                      Type = "https://example.net/validation-error" }    
 
     let updateCar (store: IDocumentStore) (raceId: Guid) (carId: Guid) (model: CarStatusUpdateInput) (path: string) =
         use session = store.OpenSession()
@@ -399,6 +489,8 @@ module CommandHandlers =
             match model.Command.ToLower() with
             | EnterPitLane -> recordPitLaneEntry store raceId carId path
             | ExitPitLane -> recordPitLaneExit store raceId carId path
+            | EnterPitBox -> recordPitBoxEntry store raceId carId path
+            | ExitPitBox -> recordPitBoxExit store raceId carId path
             | _ ->
                 Error
                     { Detail = "Car command failed, unknown command"
@@ -432,6 +524,9 @@ module CommandHandlers =
                   EnteredPitLane = Array.empty<DateTimeOffset>
                   ExitedPitLane = Array.empty<DateTimeOffset>
                   InPitLane = false
+                  EnteredPitBox = Array.empty<DateTimeOffset>
+                  ExitedPitBox = Array.empty<DateTimeOffset>
+                  InPitBox = false
                   Id = carId })
             |> Array.ofList
 

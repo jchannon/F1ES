@@ -83,6 +83,26 @@ module Aggregates =
 
             ()
 
+        member this.Apply(event: CarEnteredPitBox) =
+            this.Cars <-
+                this.Cars
+                |> updateElement event.CarId (fun car ->
+                       { car with
+                             EnteredPitBox = Array.append car.EnteredPitBox [| event.EntryTime |]
+                             InPitBox = true })
+
+            ()
+
+        member this.Apply(event: CarExitedPitBox) =
+            this.Cars <-
+                this.Cars
+                |> updateElement event.CarId (fun car ->
+                       { car with
+                             ExitedPitBox = Array.append car.ExitedPitBox [| event.ExitTime |]
+                             InPitBox = false })
+
+            ()
+
 
     type Driver() =
         member val Id = Guid.Empty with get, set

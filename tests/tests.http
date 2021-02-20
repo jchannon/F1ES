@@ -105,14 +105,28 @@ GET http://localhost:5000/drivers/0177ba18-975b-4570-a24c-e2c69a651160
 
 ### Car enters pit lane
 #@no-log
-POST {{location}}/cars/b2a8225f-212d-4336-aeba-6f0563085f94
+POST {{location}}/cars/13775237-f3a8-4065-a631-bf2aa56592d1
 Content-Type: application/json
 
 {"command":"enterpitlane"}
 
 ### Car exits pit lane
 #@no-log
-POST {{location}}/cars/b2a8225f-212d-4336-aeba-6f0563085f94
+POST {{location}}/cars/13775237-f3a8-4065-a631-bf2aa56592d1
 Content-Type: application/json
 
 {"command":"exitpitlane"}
+
+### Car enters pit box
+#@no-log
+POST {{location}}/cars/13775237-f3a8-4065-a631-bf2aa56592d1
+Content-Type: application/json
+
+{"command":"enterpitbox"}
+
+### Car exits pit box
+#@no-log
+POST {{location}}/cars/13775237-f3a8-4065-a631-bf2aa56592d1
+Content-Type: application/json
+
+{"command":"exitpitbox"}

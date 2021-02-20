@@ -42,6 +42,14 @@ module Events =
     type CarExitedPitLane(carId: Guid, exitTime: DateTimeOffset) =
         member this.CarId = carId
         member this.ExitTime = exitTime
+        
+    type CarEnteredPitBox(carId: Guid, entryTime: DateTimeOffset) =
+        member this.CarId = carId
+        member this.EntryTime = entryTime
+
+    type CarExitedPitBox(carId: Guid, exitTime: DateTimeOffset) =
+        member this.CarId = carId
+        member this.ExitTime = exitTime
 
     type DriverRegistered(name: string) =
         member this.Name = name

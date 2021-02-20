@@ -29,3 +29,9 @@ module Constants =
     
     [<Literal>]
     let ExitPitLane = "exitpitlane"
+    
+    [<Literal>]
+    let EnterPitBox = "enterpitbox"
+    
+    [<Literal>]
+    let ExitPitBox = "exitpitbox"
