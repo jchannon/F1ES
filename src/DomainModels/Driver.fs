@@ -1,7 +1,9 @@
 namespace F1ES
 
+open System
+
 type Driver =
-        { Name: string
+        { DriverId: Guid
           BlackFlagged: bool
           PenaltyApplied: bool
           PenaltyPointsApplied: int

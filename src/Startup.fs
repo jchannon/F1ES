@@ -6,6 +6,7 @@ open System.Text.Json
 open System.Text.Json.Serialization
 open F1ES.Aggregates
 open Giraffe.Serialization
+open Hallo
 open Marten.Schema
 open Microsoft.AspNetCore.Builder
 open Microsoft.Extensions.Configuration
@@ -105,19 +106,23 @@ type Startup(configuration: IConfiguration) =
 
         services.AddSingleton(serializerOptions) |> ignore
 
-        services.AddTransient<RaceSummaryRepresentation>()
-        |> ignore
-
-        //        services.AddTransient<RaceSummaryCarRepresentation>()
-//        |> ignore
-
         services.AddTransient<Hallo.Hal<RaceSummary>, RaceSummaryRepresentation>()
         |> ignore
 
-        services.AddTransient<Hallo.Hal<HalCars>, RaceSummaryCarsRepresentation>()
-        |> ignore
+//        services.AddTransient<Hallo.Hal<HalCars>, RaceSummaryCarsRepresentation>()
+//        |> ignore
+//
+//        services.AddTransient<Hallo.Hal<HalCar>, RaceSummaryCarRepresentation>()
+//        |> ignore
 
-        services.AddTransient<Hallo.Hal<HalCar>, RaceSummaryCarRepresentation>()
+        services.AddTransient<CarRepresentation>() |> ignore
+        services.AddTransient<Hal<Car>, CarRepresentation>() |> ignore
+        services.AddTransient<Hal<Car array>, CarsRepresentation>() |> ignore
+        
+        services.AddTransient<Hallo.Hal<HalDrivers>, DriversRepresentation>()
+        |> ignore
+        
+        services.AddTransient<Hallo.Hal<HalDriver>, DriverRepresentation>()
         |> ignore
 
         services.AddGiraffe() |> ignore

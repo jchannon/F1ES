@@ -302,7 +302,7 @@ module CommandHandlers =
 
         result
 
-    let registerCar (store: IDocumentStore) (streamId: Guid) (message: RegisterCarInput) path =
+    let registerCar (store: IDocumentStore) (raceId: Guid) (message: RegisterCarInput) path =
         use session = store.OpenSession()
         
         let carId = Guid.NewGuid()
@@ -311,7 +311,7 @@ module CommandHandlers =
             message.Cars
             |> List.map (fun x ->
                 { Driver =
-                      { Name = x.Driver
+                      { DriverId = x.DriverId
                         BlackFlagged = false
                         PenaltyApplied = false
                         PenaltyPointsApplied = 0
@@ -330,7 +330,7 @@ module CommandHandlers =
 
         let carRegistered = CarRegistered(cars)
 
-        session.Events.Append(streamId, carRegistered)
+        session.Events.Append(raceId, carRegistered)
         |> ignore
 
         session.SaveChanges()
@@ -366,7 +366,7 @@ module CommandHandlers =
         use session = store.OpenSession()
 
         session
-            .Query<Driver>()
+            .Query<Driver>().ToArray()
             
     let getDriverById (store: IDocumentStore) (driverId:Guid) =
         use session = store.OpenSession()

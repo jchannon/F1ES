@@ -1,6 +1,7 @@
 namespace F1ES
 
 module HTTPHandlers =
+    open F1ES.Aggregates
     open F1ES.Projections
     open ModelBinding
     open System
@@ -39,7 +40,6 @@ module HTTPHandlers =
                     match result with
                     | Ok streamId ->
                         ctx.SetStatusCode 201
-
                         ctx.SetHttpHeader "Location" (sprintf "%s/%O" (ctx.Request.GetEncodedUrl()) streamId)
                         //TODO Set cache headers
 
@@ -109,10 +109,10 @@ module HTTPHandlers =
                     { ResourceOwner = (sprintf "/race/%O/cars" streamId)
                       Cars = returnedRace.Cars }
 
-                return! halHandler halCars next ctx
+                return! halHandler returnedRace.Cars next ctx
             }
 
-    let registerCarHandler (streamId: Guid): HttpHandler =
+    let registerCarHandler (raceId: Guid): HttpHandler =
         fun (next: HttpFunc) (ctx: HttpContext) ->
             task {
                 let! model = tryBindJsonBody<RegisterCarInput> (ctx)
@@ -123,7 +123,7 @@ module HTTPHandlers =
                         ctx.RequestServices.GetRequiredService<IDocumentStore>()
 
                     let result =
-                        CommandHandlers.registerCar store streamId x (ctx.Request.Path.ToString())
+                        CommandHandlers.registerCar store raceId x (ctx.Request.Path.ToString())
 
                     match result with
                     | Ok carId ->
@@ -201,6 +201,10 @@ module HTTPHandlers =
 
                 | Error errorHandler -> return! errorHandler next ctx
             }
+            
+    type HalDrivers =
+        { ResourceOwner: string
+          Drivers: Driver array }
 
     let getDriversHandler: HttpHandler =
         fun (next: HttpFunc) (ctx: HttpContext) ->
@@ -209,7 +213,11 @@ module HTTPHandlers =
                     ctx.RequestServices.GetRequiredService<IDocumentStore>()
 
                 let drivers = CommandHandlers.getDrivers store
-                return! json drivers next ctx
+                let halDrivers =
+                    { ResourceOwner = "/drivers"
+                      Drivers = drivers }
+
+                return! halHandler halDrivers next ctx
             }
             
     let optionsDriversHandler:HttpHandler =
@@ -219,6 +227,8 @@ module HTTPHandlers =
                 return! next ctx
             }
             
+    type HalDriver = { ResourceOwner: string; Driver: Driver }
+            
     let getDriverHandler (driverId:Guid) : HttpHandler =
         fun (next: HttpFunc) (ctx: HttpContext) ->
             task {
@@ -226,7 +236,11 @@ module HTTPHandlers =
                     ctx.RequestServices.GetRequiredService<IDocumentStore>()
 
                 let driver = CommandHandlers.getDriverById store driverId
-                return! json driver next ctx
+                let halDriver =
+                    { ResourceOwner = (sprintf "/drivers/%O" driverId)
+                      Driver  = driver }
+
+                return! halHandler halDriver next ctx
             }
             
     let optionsDriverHandler (_:Guid):HttpHandler =

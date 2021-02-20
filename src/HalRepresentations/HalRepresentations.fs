@@ -1,5 +1,6 @@
 namespace F1ES
 
+open F1ES.Aggregates
 open F1ES.HTTPHandlers
 open F1ES.Projections
 open F1ES.Constants
@@ -63,19 +64,28 @@ type RaceSummaryRepresentation() =
             alllinks |> Seq.ofList
 
 [<AbstractClass>]
-type ArrayRepresentation<'T>(id: string, itemLinks: IHalLinks<'T>) =
+type ArrayRepresentation<'T>(baseUrl: string, itemLinks: IHalLinks<'T>) =
     inherit Hal<'T array>()
 
     interface IHalState<'T array> with
         member this.StateFor(resource) = {| Count = resource.Length |} :> obj
 
-    interface IHalLinks<RaceSummary> with
+    interface IHalLinks<'T array> with
         member this.LinksFor(resource) =
-            let raceIdUrl = (sprintf "/race/%O" id)
 
-            let links = [ Link(Link.Self, raceIdUrl) ]
+            let links = [ Link(Link.Self, baseUrl) ]
 
             links |> Seq.ofList
+            
+    interface IHalEmbedded<'T array> with
+        member this.EmbeddedFor(resource) =
+            let representations = resource |> Array.map(fun x ->
+                                            let links = itemLinks.LinksFor(x)
+                                            HalRepresentation(x,links)
+                                            )
+            {|Items = representations|} :> obj
+            
+
 
 type RaceSummaryCarsRepresentation() =
     inherit Hal<HalCars>()
@@ -106,6 +116,57 @@ type RaceSummaryCarRepresentation() =
 //        member this.EmbeddedFor(resource) = {| Cars = resource.Cars |} :> obj
 
     interface IHalLinks<HalCar> with
+        member this.LinksFor(resource) =
+
+            let links =
+                [ Link(Link.Self, resource.ResourceOwner) ]
+
+            links |> Seq.ofList
+
+type CarRepresentation()=
+    inherit Hal<Car>()
+    
+    interface IHalLinks<Car> with
+        member this.LinksFor(resource) =
+
+            let links =
+                [ Link(Link.Self, $"/race/????/cars/{resource.Id}") ]
+
+            links |> Seq.ofList
+
+type CarsRepresentation(raceCarRep:CarRepresentation) =
+    inherit ArrayRepresentation<Car>("/race/????/cars",raceCarRep)
+
+
+type DriversRepresentation() =
+    inherit Hal<HalDrivers>()
+
+    interface IHalState<HalDrivers> with
+        member this.StateFor(resource) =
+            {| Count = resource.Drivers.Length |} :> obj
+
+    interface IHalEmbedded<HalDrivers> with
+        member this.EmbeddedFor(resource) = {| Cars = resource.Drivers |} :> obj
+
+    interface IHalLinks<HalDrivers> with
+        member this.LinksFor(resource) =
+
+            let links =
+                [ Link(Link.Self, resource.ResourceOwner) ]
+
+            links |> Seq.ofList
+            
+type DriverRepresentation() =
+    inherit Hal<HalDriver>()
+
+    interface IHalState<HalDriver> with
+        member this.StateFor(resource) =
+            resource.Driver :> obj
+//
+//    interface IHalEmbedded<HalCar> with
+//        member this.EmbeddedFor(resource) = {| Cars = resource.Cars |} :> obj
+
+    interface IHalLinks<HalDriver> with
         member this.LinksFor(resource) =
 
             let links =

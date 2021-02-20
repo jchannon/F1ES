@@ -82,20 +82,18 @@ GET {{location}}/cars
 POST {{location}}/cars
 Content-Type: application/json
 
-{"cars":[{"team": "Ferrari","driver": "Charles LeClerc"}]}
+{"cars":[{"team": "Ferrari","driverid": "0177bf8a-7d6c-4c3c-a621-4fb68f3806f8"}]}
 
 ### Get a car
 #@no-log
-
-
-GET {{location}}/cars/edd488d5-7609-424c-9090-e0d01e8aad4c
+GET {{location}}/cars/e21ab06a-3473-41d6-b3ab-12768de2df88
 
 ### Register driver
 #@no-log
 POST http://localhost:5000/drivers
 Content-Type: application/json
 
-{"name": "lewis hamiltonfsd"}
+{"name": "Lewis Hamilton"}
 
 ### Get drivers
 #@no-log

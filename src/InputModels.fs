@@ -8,7 +8,7 @@ module InputModels =
     open F1ES.Constants
 
     [<CLIMutable>]
-    type CarInput = { Team: Team; Driver: string }
+    type CarInput = { Team: Team; DriverId: Guid }
 
     [<CLIMutable>]
     type RaceScheduledInput =
