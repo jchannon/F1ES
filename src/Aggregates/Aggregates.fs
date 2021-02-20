@@ -63,15 +63,23 @@ module Aggregates =
             this.Cars <- event.Cars
             ()
 
-
-
         member this.Apply(event: CarEnteredPitLane) =
-
             this.Cars <-
                 this.Cars
-                |> updateElement event.CarId (fun x ->
-                       x.EnteredPitLane <- Array.append x.EnteredPitLane [| event.EntryTime |]
-                       x)
+                |> updateElement event.CarId (fun car ->
+                       { car with
+                             EnteredPitLane = Array.append car.EnteredPitLane [| event.EntryTime |]
+                             InPitLane = true })
+
+            ()
+
+        member this.Apply(event: CarExitedPitLane) =
+            this.Cars <-
+                this.Cars
+                |> updateElement event.CarId (fun car ->
+                       { car with
+                             ExitedPitLane = Array.append car.ExitedPitLane [| event.ExitTime |]
+                             InPitLane = false })
 
             ()
 

@@ -109,3 +109,10 @@ POST {{location}}/cars/b2a8225f-212d-4336-aeba-6f0563085f94
 Content-Type: application/json
 
 {"command":"enterpitlane"}
+
+### Car exits pit lane
+#@no-log
+POST {{location}}/cars/b2a8225f-212d-4336-aeba-6f0563085f94
+Content-Type: application/json
+
+{"command":"exitpitlane"}

@@ -62,6 +62,9 @@ module Projections =
             self.ProjectEvent<CarEnteredPitLane>(self.ApplyCarEnteredPitLane)
             |> ignore
 
+            self.ProjectEvent<CarExitedPitLane>(self.ApplyCarExitedPitLane)
+            |> ignore
+
         //self.DeleteEvent<RaceStarted>() |> ignore
 
         member this.ApplyRaceScheduled (projection: RaceSummary) (event: RaceScheduled) =
@@ -110,8 +113,19 @@ module Projections =
         member this.ApplyCarEnteredPitLane (projection: RaceSummary) (event: CarEnteredPitLane) =
             projection.Cars <-
                 projection.Cars
-                |> updateElement event.CarId (fun x ->
-                       x.EnteredPitLane <- Array.append x.EnteredPitLane [| event.EntryTime |]
-                       x)
+                |> updateElement event.CarId (fun car ->
+                       { car with
+                             EnteredPitLane = Array.append car.EnteredPitLane [| event.EntryTime |]
+                             InPitLane = true })
+
+            ()
+
+        member this.ApplyCarExitedPitLane (projection: RaceSummary) (event: CarExitedPitLane) =
+            projection.Cars <-
+                projection.Cars
+                |> updateElement event.CarId (fun car ->
+                       { car with
+                             ExitedPitLane = Array.append car.ExitedPitLane [| event.ExitTime |]
+                             InPitLane = false })
 
             ()

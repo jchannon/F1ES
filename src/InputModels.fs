@@ -106,22 +106,19 @@ module InputModels =
 
                     Error(RequestErrors.unprocessableEntity (problemDetailsHandler problemDetails))
 
-    let UpdateCarCommands = [| EnterPitLane |]
+    let UpdateCarCommands = [| EnterPitLane; ExitPitLane |]
 
     [<CLIMutable>]
     type CarStatusUpdateInput =
-        { Command: string
-           }
+        { Command: string }
         member this.HasErrors() =
             let statusValidation =
                 match UpdateCarCommands
                       |> Array.exists (fun x -> x.Equals(this.Command, StringComparison.OrdinalIgnoreCase)) with
                 | true -> None
                 | false ->
-                    let commands = String.Join(" or ", Commands)
+                    let commands = String.Join(" or ", UpdateCarCommands)
                     Some(sprintf "Status needs to be %s" commands)
-
-            
 
             [| statusValidation |] |> Array.choose id
 
