@@ -84,6 +84,7 @@ type Startup(configuration: IConfiguration) =
             |> ignore
 
             x.Events.InlineProjections.Add<RaceProjection>()
+            x.Events.InlineProjections.Add<PitstopProjection>()
 
             x
                 .Schema

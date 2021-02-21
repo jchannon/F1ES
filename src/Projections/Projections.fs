@@ -64,7 +64,7 @@ module Projections =
 
             self.ProjectEvent<CarExitedPitLane>(self.ApplyCarExitedPitLane)
             |> ignore
-            
+
             self.ProjectEvent<CarEnteredPitBox>(self.ApplyCarEnteredPitBox)
             |> ignore
 
@@ -153,5 +153,58 @@ module Projections =
                        { car with
                              ExitedPitBox = Array.append car.ExitedPitBox [| event.ExitTime |]
                              InPitBox = false })
+
+            ()
+
+    type PitstopSummary() =
+        member val Id = Guid.Empty with get, set
+        member val PitLaneEntryTime: DateTimeOffset = DateTimeOffset.MinValue with get, set
+        member val PitLaneExitTime: DateTimeOffset = DateTimeOffset.MinValue with get, set
+
+        member this.PitLaneTime: TimeSpan =
+            this.PitLaneExitTime - this.PitLaneEntryTime
+
+        member val PitBoxEntryTime: DateTimeOffset = DateTimeOffset.MinValue with get, set
+        member val PitBoxExitTime: DateTimeOffset = DateTimeOffset.MinValue with get, set
+
+        member this.PitBoxTime: TimeSpan =
+            this.PitBoxExitTime - this.PitBoxEntryTime
+
+
+    type PitstopProjection() as self =
+        inherit ViewProjection<PitstopSummary, Guid>()
+
+        do
+            self.ProjectEvent<CarEnteredPitLane>(self.ApplyCarEnteredPitLane)
+            |> ignore
+
+            self.ProjectEvent<CarExitedPitLane>(self.ApplyCarExitedPitLane)
+            |> ignore
+
+            self.ProjectEvent<CarEnteredPitBox>(self.ApplyCarEnteredPitBox)
+            |> ignore
+
+            self.ProjectEvent<CarExitedPitBox>(self.ApplyCarExitedPitBox)
+            |> ignore
+
+        member this.ApplyCarEnteredPitLane (projection: PitstopSummary) (event: CarEnteredPitLane) =
+            projection.Id <- event.CarId
+            projection.PitLaneEntryTime <- event.EntryTime
+            ()
+
+        member this.ApplyCarExitedPitLane (projection: PitstopSummary) (event: CarExitedPitLane) =
+            projection.Id <- event.CarId
+            projection.PitLaneExitTime <- event.ExitTime
+            ()
+
+        member this.ApplyCarEnteredPitBox (projection: PitstopSummary) (event: CarEnteredPitBox) =
+            projection.Id <- event.CarId
+            projection.PitBoxEntryTime <- event.EntryTime
+
+            ()
+
+        member this.ApplyCarExitedPitBox (projection: PitstopSummary) (event: CarExitedPitBox) =
+            projection.Id <- event.CarId
+            projection.PitBoxExitTime <- event.ExitTime
 
             ()
