@@ -3,6 +3,7 @@ namespace F1ES
 module Projections =
 
     open System
+    open System.Text.Json.Serialization
     open F1ES.Events
     open Marten.Events.Projections
 
@@ -156,23 +157,28 @@ module Projections =
 
             ()
 
-    type PitstopSummary() =
-        member val Id = Guid.Empty with get, set
-        member val PitLaneEntryTime: DateTimeOffset = DateTimeOffset.MinValue with get, set
-        member val PitLaneExitTime: DateTimeOffset = DateTimeOffset.MinValue with get, set
-
-        member this.PitLaneTime: TimeSpan =
-            this.PitLaneExitTime - this.PitLaneEntryTime
-
-        member val PitBoxEntryTime: DateTimeOffset = DateTimeOffset.MinValue with get, set
-        member val PitBoxExitTime: DateTimeOffset = DateTimeOffset.MinValue with get, set
-
-        member this.PitBoxTime: TimeSpan =
+    type Pitstop =
+        { PitLaneEntryTime: DateTimeOffset
+          PitLaneExitTime: DateTimeOffset
+          PitBoxEntryTime: DateTimeOffset
+          PitBoxExitTime: DateTimeOffset }
+        member this.PitBoxTime =
             this.PitBoxExitTime - this.PitBoxEntryTime
 
+        member this.PitLaneTime =
+            this.PitLaneExitTime - this.PitLaneEntryTime
+
+    type PitstopSummary() =
+        member val Id = Guid.Empty with get, set
+        member val CarId = Guid.Empty with get, set
+        member val PitStops = Array.empty<Pitstop> with get, set
 
     type PitstopProjection() as self =
         inherit ViewProjection<PitstopSummary, Guid>()
+
+        let updateElement key f array =
+            array
+            |> Array.map (fun x -> if x.PitLaneEntryTime = key then f x else x)
 
         do
             self.ProjectEvent<CarEnteredPitLane>(self.ApplyCarEnteredPitLane)
@@ -188,23 +194,62 @@ module Projections =
             |> ignore
 
         member this.ApplyCarEnteredPitLane (projection: PitstopSummary) (event: CarEnteredPitLane) =
-            projection.Id <- event.CarId
-            projection.PitLaneEntryTime <- event.EntryTime
+            projection.CarId <- event.CarId
+
+            projection.PitStops <-
+                Array.append
+                    projection.PitStops
+                    [| { PitLaneEntryTime = event.EntryTime
+                         PitLaneExitTime = DateTimeOffset.MinValue
+                         PitBoxEntryTime = DateTimeOffset.MinValue
+                         PitBoxExitTime = DateTimeOffset.MinValue } |]
+
             ()
 
         member this.ApplyCarExitedPitLane (projection: PitstopSummary) (event: CarExitedPitLane) =
-            projection.Id <- event.CarId
-            projection.PitLaneExitTime <- event.ExitTime
+            projection.CarId <- event.CarId
+
+            let latestPitstop =
+                projection.PitStops
+                |> Array.sortByDescending (fun x -> x.PitLaneEntryTime)
+                |> Array.head
+
+            projection.PitStops <-
+                projection.PitStops
+                |> updateElement latestPitstop.PitLaneEntryTime (fun pitstop ->
+                       { pitstop with
+                             PitLaneExitTime = event.ExitTime })
+
             ()
 
         member this.ApplyCarEnteredPitBox (projection: PitstopSummary) (event: CarEnteredPitBox) =
-            projection.Id <- event.CarId
-            projection.PitBoxEntryTime <- event.EntryTime
+            projection.CarId <- event.CarId
+
+            let latestPitstop =
+                projection.PitStops
+                |> Array.sortByDescending (fun x -> x.PitLaneEntryTime)
+                |> Array.head
+
+            projection.PitStops <-
+                projection.PitStops
+                |> updateElement latestPitstop.PitLaneEntryTime (fun pitstop ->
+                       { pitstop with
+                             PitBoxEntryTime = event.EntryTime })
 
             ()
 
         member this.ApplyCarExitedPitBox (projection: PitstopSummary) (event: CarExitedPitBox) =
-            projection.Id <- event.CarId
-            projection.PitBoxExitTime <- event.ExitTime
+            projection.CarId <- event.CarId
+
+            let latestPitstop =
+                projection.PitStops
+                |> Array.sortByDescending (fun x -> x.PitLaneEntryTime)
+                |> Array.head
+
+            projection.PitStops <-
+                projection.PitStops
+                |> updateElement latestPitstop.PitLaneEntryTime (fun pitstop ->
+                       { pitstop with
+                             PitBoxExitTime = event.ExitTime })
 
             ()

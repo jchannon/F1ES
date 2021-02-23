@@ -4,7 +4,7 @@ module ProblemDetails =
 
     open Microsoft.AspNetCore.Http
     open Giraffe
-    open FSharp.Control.Tasks.V2.ContextInsensitive
+    open FSharp.Control.Tasks
 
     type ProblemDetails =
         { Type: string

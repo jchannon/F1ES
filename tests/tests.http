@@ -3,7 +3,7 @@
 POST http://localhost:5000/race
 Content-Type: application/json
 
-{"trackname":"Silverstone","country":"UK","scheduledstarttime": "2021-02-09T21:05:24Z", "title": "French GP 2021"}
+{"trackname":"Silverstone","country":"UK","scheduledstarttime": "2021-02-09T21:05:24Z", "title": "French GP 20212"}
 
 > {% client.global.set("location",response.headers.valueOf("location")) %}
 
@@ -82,7 +82,7 @@ GET {{location}}/cars
 POST {{location}}/cars
 Content-Type: application/json
 
-{"cars":[{"team": "Ferrari","driverid": "0177c05b-3304-43dd-9bfd-012c1b00eef3"}]}
+{"cars":[{"team": "Ferrari","driverid": "0177c92a-2476-4389-81cc-46d8ae01f2c0"}]}
 
 ### Get a car
 #@no-log
@@ -105,28 +105,32 @@ GET http://localhost:5000/drivers/0177ba18-975b-4570-a24c-e2c69a651160
 
 ### Car enters pit lane
 #@no-log
-POST {{location}}/cars/13775237-f3a8-4065-a631-bf2aa56592d1
+POST {{location}}/cars/89d669a9-df6d-453a-bf1e-52f275702c18
 Content-Type: application/json
 
 {"command":"enterpitlane"}
 
 ### Car exits pit lane
 #@no-log
-POST {{location}}/cars/13775237-f3a8-4065-a631-bf2aa56592d1
+POST {{location}}/cars/89d669a9-df6d-453a-bf1e-52f275702c18
 Content-Type: application/json
 
 {"command":"exitpitlane"}
 
 ### Car enters pit box
 #@no-log
-POST {{location}}/cars/13775237-f3a8-4065-a631-bf2aa56592d1
+POST {{location}}/cars/89d669a9-df6d-453a-bf1e-52f275702c18
 Content-Type: application/json
 
 {"command":"enterpitbox"}
 
 ### Car exits pit box
 #@no-log
-POST {{location}}/cars/13775237-f3a8-4065-a631-bf2aa56592d1
+POST {{location}}/cars/89d669a9-df6d-453a-bf1e-52f275702c18
 Content-Type: application/json
 
 {"command":"exitpitbox"}
+
+###Pit stops
+#@no-log
+GET {{location}}/pitstops

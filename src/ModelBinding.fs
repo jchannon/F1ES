@@ -4,7 +4,7 @@ module ModelBinding =
     open System
     open System.Text.Json
     open Giraffe
-    open FSharp.Control.Tasks.V2.ContextInsensitive
+    open FSharp.Control.Tasks
     open Microsoft.AspNetCore.Http
     open F1ES.ProblemDetails
 

@@ -8,7 +8,7 @@ module HTTPHandlers =
     open Giraffe
     open Marten
     open Microsoft.AspNetCore.Http
-    open FSharp.Control.Tasks.V2.ContextInsensitive
+    open FSharp.Control.Tasks
     open Microsoft.Extensions.DependencyInjection
     open F1ES.InputModels
     open F1ES.ProblemDetails
@@ -18,7 +18,7 @@ module HTTPHandlers =
     let optionsHandler: HttpHandler =
         fun (next: HttpFunc) (ctx: HttpContext) ->
             task {
-                ctx.SetHttpHeader "Allow" "POST, OPTIONS,"
+                ctx.SetHttpHeader("Allow", "POST, OPTIONS")
                 return! next ctx
             }
 
@@ -40,7 +40,7 @@ module HTTPHandlers =
                     match result with
                     | Ok streamId ->
                         ctx.SetStatusCode 201
-                        ctx.SetHttpHeader "Location" (sprintf "%s/%O" (ctx.Request.GetEncodedUrl()) streamId)
+                        ctx.SetHttpHeader("Location", (sprintf "%s/%O" (ctx.Request.GetEncodedUrl()) streamId))
                         //TODO Set cache headers
 
                         return! next ctx
@@ -89,7 +89,7 @@ module HTTPHandlers =
     let optionsRaceHandler (streamId: Guid): HttpHandler =
         fun (next: HttpFunc) (ctx: HttpContext) ->
             task {
-                ctx.SetHttpHeader "Allow" "GET, POST, OPTIONS, HEAD"
+                ctx.SetHttpHeader("Allow", "GET, POST, OPTIONS, HEAD")
                 return! next ctx
             }
 
@@ -129,7 +129,7 @@ module HTTPHandlers =
                     | Ok carId ->
                         ctx.SetStatusCode 201
 
-                        ctx.SetHttpHeader "Location" (sprintf "%s/%O" (ctx.Request.GetEncodedUrl()) carId)
+                        ctx.SetHttpHeader("Location", (sprintf "%s/%O" (ctx.Request.GetEncodedUrl()) carId))
                         //TODO Set cache headers
 
                         return! next ctx
@@ -143,7 +143,7 @@ module HTTPHandlers =
     let optionsRaceCarHandler (streamId: Guid): HttpHandler =
         fun (next: HttpFunc) (ctx: HttpContext) ->
             task {
-                ctx.SetHttpHeader "Allow" "GET, POST, OPTIONS, HEAD"
+                ctx.SetHttpHeader("Allow", "GET, POST, OPTIONS, HEAD")
                 return! next ctx
             }
 
@@ -193,7 +193,7 @@ module HTTPHandlers =
     let optionsgetCarHandler (race: Guid, carId: Guid): HttpHandler =
         fun (next: HttpFunc) (ctx: HttpContext) ->
             task {
-                ctx.SetHttpHeader "Allow" "GET, OPTIONS, HEAD, POST"
+                ctx.SetHttpHeader("Allow", "GET, OPTIONS, HEAD, POST")
                 return! next ctx
             }
 
@@ -215,7 +215,7 @@ module HTTPHandlers =
                     | Ok streamId ->
                         ctx.SetStatusCode 201
 
-                        ctx.SetHttpHeader "Location" (sprintf "%s/%O" (ctx.Request.GetEncodedUrl()) streamId)
+                        ctx.SetHttpHeader("Location", (sprintf "%s/%O" (ctx.Request.GetEncodedUrl()) streamId))
                         //TODO Set cache headers
 
                         return! next ctx
@@ -247,7 +247,7 @@ module HTTPHandlers =
     let optionsDriversHandler:HttpHandler =
         fun (next: HttpFunc) (ctx: HttpContext) ->
             task {
-                ctx.SetHttpHeader "Allow" "GET, OPTIONS, HEAD, POST"
+                ctx.SetHttpHeader("Allow", "GET, OPTIONS, HEAD, POST")
                 return! next ctx
             }
             
@@ -270,6 +270,16 @@ module HTTPHandlers =
     let optionsDriverHandler (_:Guid):HttpHandler =
         fun (next: HttpFunc) (ctx: HttpContext) ->
             task {
-                ctx.SetHttpHeader "Allow" "GET, OPTIONS, HEAD"
+                ctx.SetHttpHeader("Allow", "GET, OPTIONS, HEAD")
                 return! next ctx
             }
+            
+    let getPitStopsHandler (raceId:Guid):HttpHandler =
+        fun (next: HttpFunc) (ctx: HttpContext) ->
+            task {
+                let store =
+                    ctx.RequestServices.GetRequiredService<IDocumentStore>()
+
+                let pitStops = CommandHandlers.getPitStops store
+                return! json pitStops next ctx
+                }

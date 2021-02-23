@@ -5,7 +5,6 @@ open System.Linq.Expressions
 open System.Text.Json
 open System.Text.Json.Serialization
 open F1ES.Aggregates
-open Giraffe.Serialization
 open Hallo
 open Marten.Schema
 open Microsoft.AspNetCore.Builder
@@ -17,6 +16,8 @@ open Giraffe
 open Marten
 open F1ES.HTTPHandlers
 open F1ES.Projections
+open Microsoft.FSharpLu.Json
+open Newtonsoft.Json
 
 type FunAs() =
     static member MyExpression<'T, 'TResult>(e: Expression<Func<'T, 'TResult>>) = e
@@ -38,6 +39,8 @@ type Startup(configuration: IConfiguration) =
                  GET_HEAD >=> routef "/race/%O" getRaceHandler
                  POST >=> routef "/race/%O" updateRace
                  OPTIONS >=> routef "/race/%O" optionsRaceHandler
+                 
+                 GET_HEAD >=> routef "/race/%O/pitstops" getPitStopsHandler
 
                  GET_HEAD >=> routef "/race/%O/cars" getCarsHandler
                  POST >=> routef "/race/%O/cars" registerCarHandler
@@ -59,20 +62,11 @@ type Startup(configuration: IConfiguration) =
 
     member __.ConfigureServices(services: IServiceCollection) =
 
-        let options = JsonSerializerOptions()
-        options.Converters.Add(JsonFSharpConverter(JsonUnionEncoding.FSharpLuLike))
-        options.PropertyNameCaseInsensitive <- true
-        //options.IgnoreNullValues <- true
-
-        services.AddSingleton<IJsonSerializer>(SystemTextJsonSerializer(options))
-        |> ignore
-
         let titleIndex =
             FunAs.MyExpression(fun (x: Race) -> x.Title :> obj)
 
         let nameIndex =
             FunAs.MyExpression(fun (x: Driver) -> x.Name :> obj)
-
 
         services.AddMarten(fun x ->
             x.Connection(appConfiguration.ConnectionString)
@@ -92,7 +86,6 @@ type Startup(configuration: IConfiguration) =
                 .UniqueIndex(UniqueIndexType.Computed, titleIndex)
             |> ignore
 
-
             x
                 .Schema
                 .For<Driver>()
@@ -101,12 +94,18 @@ type Startup(configuration: IConfiguration) =
 
         |> ignore
 
+        //STJ for HAL
         let serializerOptions = JsonSerializerOptions()
         serializerOptions.Converters.Add(Hallo.Serialization.HalRepresentationConverter())
         serializerOptions.Converters.Add(Hallo.Serialization.LinksConverter())
         serializerOptions.Converters.Add(JsonFSharpConverter(JsonUnionEncoding.FSharpLuLike))
-
+        serializerOptions.PropertyNameCaseInsensitive <- true
         services.AddSingleton(serializerOptions) |> ignore
+        
+        //JSON.NET for Giraffe
+        let customSettings = JsonSerializerSettings()
+        customSettings.Converters.Add(CompactUnionJsonConverter(true))
+        services.AddSingleton<Json.ISerializer>(NewtonsoftJson.Serializer(customSettings)) |> ignore
 
         services.AddTransient<Hallo.Hal<RaceSummary>, RaceSummaryRepresentation>()
         |> ignore

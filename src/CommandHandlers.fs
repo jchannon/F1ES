@@ -346,7 +346,7 @@ module CommandHandlers =
                       Title = "Car command failed"
                       Instance = path
                       Type = "https://example.net/validation-error" }
-        
+
 
     let recordPitLaneExit (store: IDocumentStore) (raceId: Guid) (carId: Guid) (path: string) =
         use session = store.OpenSession()
@@ -392,7 +392,7 @@ module CommandHandlers =
                       Title = "Car command failed"
                       Instance = path
                       Type = "https://example.net/validation-error" }
-    
+
     let recordPitBoxEntry (store: IDocumentStore) (raceId: Guid) (carId: Guid) (path: string) =
         use session = store.OpenSession()
 
@@ -419,24 +419,33 @@ module CommandHandlers =
             let car =
                 race.Cars |> Array.find (fun x -> x.Id = carId)
 
-            match car.InPitBox with
-            | false ->
-                let carEnteredPitBox =
-                    CarEnteredPitBox(carId, DateTimeOffset.UtcNow)
-
-                session.Events.Append(raceId, carEnteredPitBox)
-                |> ignore
-
-                session.SaveChanges()
-                Ok()
+            match car.InPitLane with
             | true ->
+                match car.InPitBox with
+                | false ->
+                    let carEnteredPitBox =
+                        CarEnteredPitBox(carId, DateTimeOffset.UtcNow)
+
+                    session.Events.Append(raceId, carEnteredPitBox)
+                    |> ignore
+
+                    session.SaveChanges()
+                    Ok()
+                | true ->
+                    Error
+                        { Detail = "The car is already in the pitbox"
+                          Status = 409
+                          Title = "Car command failed"
+                          Instance = path
+                          Type = "https://example.net/validation-error" }
+            | false ->
                 Error
-                    { Detail = "The car is already in the pitbox"
+                    { Detail = "The car is not in the pitlane"
                       Status = 409
                       Title = "Car command failed"
                       Instance = path
                       Type = "https://example.net/validation-error" }
-        
+
 
     let recordPitBoxExit (store: IDocumentStore) (raceId: Guid) (carId: Guid) (path: string) =
         use session = store.OpenSession()
@@ -464,23 +473,32 @@ module CommandHandlers =
             let car =
                 race.Cars |> Array.find (fun x -> x.Id = carId)
 
-            match car.InPitBox with
+            match car.InPitLane with
             | true ->
-                let carExitedPitBox =
-                    CarExitedPitBox(carId, DateTimeOffset.UtcNow)
+                match car.InPitBox with
+                | true ->
+                    let carExitedPitBox =
+                        CarExitedPitBox(carId, DateTimeOffset.UtcNow) 
 
-                session.Events.Append(raceId, carExitedPitBox)
-                |> ignore
+                    session.Events.Append(raceId, carExitedPitBox)
+                    |> ignore
 
-                session.SaveChanges()
-                Ok()
+                    session.SaveChanges()
+                    Ok()
+                | false ->
+                    Error
+                        { Detail = "The car is not in the pitbox"
+                          Status = 409
+                          Title = "Car command failed"
+                          Instance = path
+                          Type = "https://example.net/validation-error" }
             | false ->
                 Error
-                    { Detail = "The car is not in the pitbox"
+                    { Detail = "The car is not in the pitlane"
                       Status = 409
                       Title = "Car command failed"
                       Instance = path
-                      Type = "https://example.net/validation-error" }    
+                      Type = "https://example.net/validation-error" }
 
     let updateCar (store: IDocumentStore) (raceId: Guid) (carId: Guid) (model: CarStatusUpdateInput) (path: string) =
         use session = store.OpenSession()
@@ -574,3 +592,7 @@ module CommandHandlers =
         session
             .Query<Driver>()
             .First(fun x -> x.Id = driverId)
+
+    let getPitStops (store: IDocumentStore) =
+        use sessions = store.OpenSession()
+        sessions.Query<PitstopSummary>().ToArray()
