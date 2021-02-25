@@ -193,3 +193,35 @@ module InputModels =
                           Type = "https://example.net/validation-error" }
 
                     Error(RequestErrors.unprocessableEntity (problemDetailsHandler problemDetails))
+
+    let UpdateLapCommands = [| StartLap |]
+
+    [<CLIMutable>]
+    type LapUpdateInput =
+        { Command: string }
+        member this.HasErrors() =
+            let statusValidation =
+                match UpdateLapCommands
+                      |> Array.exists (fun x -> x.Equals(this.Command, StringComparison.OrdinalIgnoreCase)) with
+                | true -> None
+                | false ->
+                    let commands = String.Join(" or ", UpdateLapCommands)
+                    Some(sprintf "Status needs to be %s" commands)
+
+            [| statusValidation |] |> Array.choose id
+
+        interface IProblemDetailsValidation<LapUpdateInput> with
+            member this.Validate path =
+                match this.HasErrors() with
+                | [||] -> Ok this
+                | x ->
+                    let errors = String.Join(",", x)
+
+                    let problemDetails =
+                        { Detail = errors
+                          Status = 422
+                          Title = "Model validation failed"
+                          Instance = path
+                          Type = "https://example.net/validation-error" }
+
+                    Error(RequestErrors.unprocessableEntity (problemDetailsHandler problemDetails))

@@ -31,6 +31,15 @@ module Aggregates =
 
         member this.Apply(event: RaceStarted) =
             this.RaceStarted <- Some event.RaceStarted
+            let lap =
+                { LapStarted = event.RaceStarted
+                  SafetyCarDeployed = None
+                  SafetyCarEnded = None
+                  VirtualSafetyCarDeployed = None
+                  VirtualSafetyCarEnded = None
+                  Number = this.Laps.Length + 1 }
+
+            this.Laps <- Array.append this.Laps [| lap |]
             ()
 
         member this.Apply(event: RaceEnded) =
@@ -102,6 +111,17 @@ module Aggregates =
                              InPitBox = false })
 
             ()
+
+        member this.Apply(event: LapStarted) =
+            let lap =
+                { LapStarted = event.LapStartedTime
+                  SafetyCarDeployed = None
+                  SafetyCarEnded = None
+                  VirtualSafetyCarDeployed = None
+                  VirtualSafetyCarEnded = None
+                  Number = this.Laps.Length + 1 }
+
+            this.Laps <- Array.append this.Laps [| lap |]
 
 
     type Driver() =

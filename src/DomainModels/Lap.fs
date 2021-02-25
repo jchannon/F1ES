@@ -4,7 +4,6 @@ open System
 
 type Lap =
         { LapStarted: DateTimeOffset
-          LapEnded: DateTimeOffset
           Number: int
           SafetyCarDeployed: DateTimeOffset option
           SafetyCarEnded: DateTimeOffset option

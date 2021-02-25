@@ -2,6 +2,7 @@ namespace F1ES
 
 open System
 open System.Linq.Expressions
+open System.Text.Encodings.Web
 open System.Text.Json
 open System.Text.Json.Serialization
 open F1ES.Aggregates
@@ -41,6 +42,7 @@ type Startup(configuration: IConfiguration) =
                  OPTIONS >=> routef "/race/%O" optionsRaceHandler
                  
                  GET_HEAD >=> routef "/race/%O/pitstops" getPitStopsHandler
+                 GET_HEAD >=> routef "/race/%O/pitstops/%O" getPitStopsByCarHandler
 
                  GET_HEAD >=> routef "/race/%O/cars" getCarsHandler
                  POST >=> routef "/race/%O/cars" registerCarHandler
@@ -49,6 +51,8 @@ type Startup(configuration: IConfiguration) =
                  GET_HEAD >=> routef "/race/%O/cars/%O" getCarHandler
                  POST >=> routef "/race/%O/cars/%O" addCarCommandHandler
                  OPTIONS >=> routef "/race/%O/cars/%O" optionsgetCarHandler
+                 
+                 POST >=> routef "/race/%O/laps" updateLapHandler
 
                  route "/drivers" >=> POST >=> registerDriverHandler
                  GET_HEAD >=> route "/drivers" >=> getDriversHandler
@@ -100,6 +104,7 @@ type Startup(configuration: IConfiguration) =
         serializerOptions.Converters.Add(Hallo.Serialization.LinksConverter())
         serializerOptions.Converters.Add(JsonFSharpConverter(JsonUnionEncoding.FSharpLuLike))
         serializerOptions.PropertyNameCaseInsensitive <- true
+        serializerOptions.Encoder <- JavaScriptEncoder.UnsafeRelaxedJsonEscaping
         services.AddSingleton(serializerOptions) |> ignore
         
         //JSON.NET for Giraffe

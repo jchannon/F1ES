@@ -35,3 +35,6 @@ module Constants =
     
     [<Literal>]
     let ExitPitBox = "exitpitbox"
+    
+    [<Literal>]
+    let StartLap = "startlap"

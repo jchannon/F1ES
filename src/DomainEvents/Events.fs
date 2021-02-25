@@ -53,3 +53,6 @@ module Events =
 
     type DriverRegistered(name: string) =
         member this.Name = name
+        
+    type LapStarted(lapStartedTime:DateTimeOffset) =
+        member this.LapStartedTime = lapStartedTime

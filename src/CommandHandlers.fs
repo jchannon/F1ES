@@ -51,16 +51,16 @@ module CommandHandlers =
         let race =
             session.Events.AggregateStream<Race>(streamId)
 
-        match race.RaceStarted, race.RaceEnded with
-        | Some _, Some _
-        | None, Some _ ->
+        match race.RaceStarted, race.RaceEnded, race.Cars.Length with
+        | Some _, Some _, carCount
+        | None, Some _, carCount ->
             Error
                 { Detail = "The race has already ended"
                   Status = 409
                   Title = "Race command failed"
                   Instance = path
                   Type = "https://example.net/validation-error" }
-        | Some _, None _ ->
+        | Some _, None _, carCount ->
             //TODO Create proper URI for problem details
             Error
                 { Detail = "The race has already started"
@@ -68,7 +68,8 @@ module CommandHandlers =
                   Title = "Race command failed"
                   Instance = path
                   Type = "https://example.net/validation-error" }
-        | None, None ->
+
+        | None, None, carCount when carCount >= 1 ->
             let raceStarted = RaceStarted(DateTimeOffset.UtcNow)
             let pitLaneOpened = PitLaneOpened(DateTimeOffset.UtcNow)
 
@@ -78,6 +79,13 @@ module CommandHandlers =
 
             session.SaveChanges()
             Ok()
+        | None, None, carCount ->
+            Error
+                { Detail = "Not enough cars registered to start the race"
+                  Status = 409
+                  Title = "Race command failed"
+                  Instance = path
+                  Type = "https://example.net/validation-error" }
 
     let stopRace (store: IDocumentStore) (streamId: Guid) (path: string) =
         use session = store.OpenSession()
@@ -478,7 +486,7 @@ module CommandHandlers =
                 match car.InPitBox with
                 | true ->
                     let carExitedPitBox =
-                        CarExitedPitBox(carId, DateTimeOffset.UtcNow) 
+                        CarExitedPitBox(carId, DateTimeOffset.UtcNow)
 
                     session.Events.Append(raceId, carExitedPitBox)
                     |> ignore
@@ -593,6 +601,67 @@ module CommandHandlers =
             .Query<Driver>()
             .First(fun x -> x.Id = driverId)
 
-    let getPitStops (store: IDocumentStore) =
+    let getPitStops (store: IDocumentStore) (raceId: Guid) =
         use sessions = store.OpenSession()
-        sessions.Query<PitstopSummary>().ToArray()
+
+        sessions
+            .Query<PitstopSummary>()
+            .Where(fun x -> x.Id = raceId)
+            .ToArray()
+            
+    let getPitStopsByCar (store: IDocumentStore) (raceId: Guid) (carId:Guid) =
+        use sessions = store.OpenSession()
+
+        sessions
+            .Query<PitstopSummary>()
+            .Where(fun x -> x.Id = raceId && x.CarId = carId)
+            .ToArray()
+
+    let startLap (store: IDocumentStore) (raceId: Guid) (path: string) =
+        use session = store.OpenSession()
+
+        let race =
+            session.Events.AggregateStream<Race>(raceId)
+
+        match race.RaceStarted, race.RaceEnded with
+        | Some _, Some _
+        | None, Some _ ->
+            Error
+                { Detail = "The race has already ended"
+                  Status = 409
+                  Title = "Car command failed"
+                  Instance = path
+                  Type = "https://example.net/validation-error" }
+        | None, None ->
+            Error
+                { Detail = "The race hasn't started"
+                  Status = 409
+                  Title = "Car command failed"
+                  Instance = path
+                  Type = "https://example.net/validation-error" }
+        | Some _, None _ ->
+
+            let lapStarted = LapStarted(DateTimeOffset.UtcNow)
+
+            session.Events.Append(raceId, lapStarted)
+            |> ignore
+
+            session.SaveChanges()
+            Ok()
+
+
+    let updateLap (store: IDocumentStore) (raceId: Guid) (model: LapUpdateInput) (path: string) =
+        use session = store.OpenSession()
+
+        let result =
+            match model.Command.ToLower() with
+            | StartLap -> startLap store raceId path
+            | _ ->
+                Error
+                    { Detail = "Car command failed, unknown command"
+                      Status = 409
+                      Title = "Car command failed"
+                      Instance = path
+                      Type = "https://example.net/validation-error" }
+
+        result

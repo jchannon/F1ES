@@ -71,6 +71,9 @@ module Projections =
 
             self.ProjectEvent<CarExitedPitBox>(self.ApplyCarExitedPitBox)
             |> ignore
+            
+            self.ProjectEvent<LapStarted>(self.ApplyLapStarted)
+            |> ignore
 
         //self.DeleteEvent<RaceStarted>() |> ignore
 
@@ -85,6 +88,15 @@ module Projections =
 
         member this.ApplyRaceStarted (projection: RaceSummary) (event: RaceStarted) =
             projection.RaceStarted <- Some event.RaceStarted
+            let lap =
+                { LapStarted = event.RaceStarted
+                  SafetyCarDeployed = None
+                  SafetyCarEnded = None
+                  VirtualSafetyCarDeployed = None
+                  VirtualSafetyCarEnded = None
+                  Number = projection.Laps.Length + 1 }
+
+            projection.Laps <- Array.append projection.Laps [| lap |]
             ()
 
         member this.ApplyRaceEnded (projection: RaceSummary) (event: RaceEnded) =
@@ -156,6 +168,17 @@ module Projections =
                              InPitBox = false })
 
             ()
+            
+        member this.ApplyLapStarted (projection:RaceSummary) (event: LapStarted) =
+            let lap =
+                { LapStarted = event.LapStartedTime
+                  SafetyCarDeployed = None
+                  SafetyCarEnded = None
+                  VirtualSafetyCarDeployed = None
+                  VirtualSafetyCarEnded = None
+                  Number = projection.Laps.Length + 1 }
+
+            projection.Laps <- Array.append projection.Laps [| lap |]
 
     type Pitstop =
         { PitLaneEntryTime: DateTimeOffset

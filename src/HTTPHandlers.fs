@@ -280,6 +280,40 @@ module HTTPHandlers =
                 let store =
                     ctx.RequestServices.GetRequiredService<IDocumentStore>()
 
-                let pitStops = CommandHandlers.getPitStops store
+                let pitStops = CommandHandlers.getPitStops store raceId
                 return! json pitStops next ctx
+                }
+            
+    let getPitStopsByCarHandler (raceId:Guid, carId:Guid) :HttpHandler =
+        fun (next: HttpFunc) (ctx: HttpContext) ->
+            task {
+                let store =
+                    ctx.RequestServices.GetRequiredService<IDocumentStore>()
+
+                let pitStops = CommandHandlers.getPitStopsByCar store raceId carId
+                return! json pitStops next ctx
+                }
+
+    let updateLapHandler (raceId:Guid) : HttpHandler =
+        fun (next: HttpFunc) (ctx: HttpContext) ->
+            task {
+                let store =
+                    ctx.RequestServices.GetRequiredService<IDocumentStore>()
+
+                let! model = tryBindJsonBody<LapUpdateInput> (ctx)
+
+                match model with
+                | Ok x ->
+                    let updateRaceResult =
+                        CommandHandlers.updateLap store raceId x (ctx.Request.Path.ToString())
+
+                    match updateRaceResult with
+                    | Ok _ ->
+                        ctx.SetStatusCode 204
+                        return! next ctx
+                    | Error e ->
+                        ctx.SetStatusCode e.Status
+                        return! problemDetailsHandler e next ctx
+
+                | Error errorHandler -> return! errorHandler next ctx
                 }
