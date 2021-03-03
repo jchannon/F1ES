@@ -18,8 +18,8 @@ These events can be triggered via HTTP. They are then recorded in a Marten event
 DriverPenaltyApplied  
 DriverBlackFlagged  
 DriverEngagedDRS
-DriverDisEngagedDRS
-TyreChanged  
+DriverDisEngagedDRS 
+TyreChanged
 NoseChanged  
 DownforceChanged  
 LapStarted  

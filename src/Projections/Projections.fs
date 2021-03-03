@@ -23,7 +23,8 @@ module Projections =
         member val Circuit: string = "" with get, set
         member val Country: string = "" with get, set
         member val ScheduledStartTime: DateTimeOffset = DateTimeOffset.MinValue with get, set
-
+        member val CurrentLap = 0 with get, set
+        member val SafetyCarOnTrack = false with get,set
 
     type RaceProjection() as self =
         inherit ViewProjection<RaceSummary, Guid>()
@@ -31,6 +32,10 @@ module Projections =
         let updateElement key f array =
             array
             |> Array.map (fun x -> if x.Id = key then f x else x)
+            
+        let updateLap key f laps =
+            laps
+            |> Array.map (fun x -> if x.Number = key then f x else x)
 
         do
             self.ProjectEvent<RaceScheduled>(self.ApplyRaceScheduled)
@@ -74,6 +79,9 @@ module Projections =
             
             self.ProjectEvent<LapStarted>(self.ApplyLapStarted)
             |> ignore
+            
+            self.ProjectEvent<SafetyCarDeployed>(self.ApplySafetyCarDeployed)
+            |> ignore
 
         //self.DeleteEvent<RaceStarted>() |> ignore
 
@@ -97,6 +105,7 @@ module Projections =
                   Number = projection.Laps.Length + 1 }
 
             projection.Laps <- Array.append projection.Laps [| lap |]
+            projection.CurrentLap <- 1
             ()
 
         member this.ApplyRaceEnded (projection: RaceSummary) (event: RaceEnded) =
@@ -179,6 +188,17 @@ module Projections =
                   Number = projection.Laps.Length + 1 }
 
             projection.Laps <- Array.append projection.Laps [| lap |]
+            
+        member this.ApplySafetyCarDeployed (projection:RaceSummary) (event: SafetyCarDeployed) =
+            projection.Laps <-
+                projection.Laps
+                |> updateLap event.CurrentLap (fun lap ->
+                       { lap with
+                             SafetyCarDeployed = Some event.DeployedTime })
+                
+            projection.SafetyCarOnTrack <- true
+
+            ()
 
     type Pitstop =
         { PitLaneEntryTime: DateTimeOffset

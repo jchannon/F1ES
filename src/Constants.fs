@@ -38,3 +38,6 @@ module Constants =
     
     [<Literal>]
     let StartLap = "startlap"
+    
+    [<Literal>]
+    let DeploySafetyCar = "deploysafetycar"

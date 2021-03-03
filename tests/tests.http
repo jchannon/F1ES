@@ -82,7 +82,7 @@ GET {{location}}/cars
 POST {{location}}/cars
 Content-Type: application/json
 
-{"cars":[{"team": "Ferrari","driverid": "0177c92a-2476-4389-81cc-46d8ae01f2c0"}]}
+{"cars":[{"team": "Ferrari","driverid": "0177f9ac-faf9-4b19-8364-663b534c22d4"}]}
 
 ### Get a car
 #@no-log
@@ -145,3 +145,10 @@ POST {{location}}/laps
 Content-Type: application/json
 
 {"command":"startlap"}
+
+###Start new lap
+#@no-log
+POST {{location}}/laps
+Content-Type: application/json
+
+{"command":"deploysafetycar"}

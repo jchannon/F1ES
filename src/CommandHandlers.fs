@@ -123,6 +123,8 @@ module CommandHandlers =
 
             session.SaveChanges()
             Ok()
+            
+    //TODO Race's have to be stopped after 2 hours       
 
     let restartRace (store: IDocumentStore) (streamId: Guid) (path: string) =
         use session = store.OpenSession()
@@ -565,6 +567,7 @@ module CommandHandlers =
         Ok carId
 
     //TODO check for already registered cars
+    //TODO check no more than 26 cars registered
 
     let handleDriverRegistered (store: IDocumentStore) (message: DriverInput) path =
         use session = store.OpenSession()
@@ -629,14 +632,14 @@ module CommandHandlers =
             Error
                 { Detail = "The race has already ended"
                   Status = 409
-                  Title = "Car command failed"
+                  Title = "Lap command failed"
                   Instance = path
                   Type = "https://example.net/validation-error" }
         | None, None ->
             Error
                 { Detail = "The race hasn't started"
                   Status = 409
-                  Title = "Car command failed"
+                  Title = "Lap command failed"
                   Instance = path
                   Type = "https://example.net/validation-error" }
         | Some _, None _ ->
@@ -648,6 +651,47 @@ module CommandHandlers =
 
             session.SaveChanges()
             Ok()
+            
+    let deploySafetyCar (store: IDocumentStore) (raceId: Guid) (path: string) =
+        use session = store.OpenSession()
+
+        let race =
+            session.Events.AggregateStream<Race>(raceId)
+
+        match race.RaceStarted, race.RaceEnded with
+        | Some _, Some _
+        | None, Some _ ->
+            Error
+                { Detail = "The race has already ended"
+                  Status = 409
+                  Title = "Lap command failed"
+                  Instance = path
+                  Type = "https://example.net/validation-error" }
+        | None, None ->
+            Error
+                { Detail = "The race hasn't started"
+                  Status = 409
+                  Title = "Lap command failed"
+                  Instance = path
+                  Type = "https://example.net/validation-error" }
+        | Some _, None _ ->
+            
+            match race.SafetyCarOnTrack with
+            |true ->
+                Error
+                    { Detail = "The safety car has already been deployed"
+                      Status = 409
+                      Title = "Lap command failed"
+                      Instance = path
+                      Type = "https://example.net/validation-error" }
+            |false ->
+                let safetyCarDeployed = SafetyCarDeployed(DateTimeOffset.UtcNow, race.CurrentLap)
+
+                session.Events.Append(raceId, safetyCarDeployed)
+                |> ignore
+
+                session.SaveChanges()
+                Ok()
 
 
     let updateLap (store: IDocumentStore) (raceId: Guid) (model: LapUpdateInput) (path: string) =
@@ -656,9 +700,10 @@ module CommandHandlers =
         let result =
             match model.Command.ToLower() with
             | StartLap -> startLap store raceId path
+            | DeploySafetyCar -> deploySafetyCar store raceId path
             | _ ->
                 Error
-                    { Detail = "Car command failed, unknown command"
+                    { Detail = "Lap command failed, unknown command"
                       Status = 409
                       Title = "Car command failed"
                       Instance = path

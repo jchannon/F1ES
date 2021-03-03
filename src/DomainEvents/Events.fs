@@ -56,3 +56,7 @@ module Events =
         
     type LapStarted(lapStartedTime:DateTimeOffset) =
         member this.LapStartedTime = lapStartedTime
+        
+    type SafetyCarDeployed(deployedTime:DateTimeOffset, currentLap:int) =
+        member this.DeployedTime = deployedTime
+        member this.CurrentLap = currentLap

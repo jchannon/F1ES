@@ -10,6 +10,10 @@ module Aggregates =
             array
             |> Array.map (fun x -> if x.Id = key then f x else x)
 
+        let updateLap key f laps =
+            laps
+            |> Array.map (fun x -> if x.Number = key then f x else x)
+
         member val Id = Guid.Empty with get, set
         member val Title: String option = None with get, set
         member val RaceId: String option = None with get, set
@@ -23,6 +27,9 @@ module Aggregates =
         member val PitLaneOpen: Boolean = true with get, set
         member val Cars = Array.empty<Car> with get, set
         member val ScheduledStartTime: DateTimeOffset option = None with get, set
+        member val CurrentLap = 0 with get, set
+        member val SafetyCarOnTrack = false with get,set
+
 
         member this.Apply(event: RaceScheduled) =
             this.RaceId <- Some(sprintf "%s - %s" event.Country event.Circuit)
@@ -31,6 +38,7 @@ module Aggregates =
 
         member this.Apply(event: RaceStarted) =
             this.RaceStarted <- Some event.RaceStarted
+
             let lap =
                 { LapStarted = event.RaceStarted
                   SafetyCarDeployed = None
@@ -40,6 +48,7 @@ module Aggregates =
                   Number = this.Laps.Length + 1 }
 
             this.Laps <- Array.append this.Laps [| lap |]
+            this.CurrentLap <- 1
             ()
 
         member this.Apply(event: RaceEnded) =
@@ -119,9 +128,21 @@ module Aggregates =
                   SafetyCarEnded = None
                   VirtualSafetyCarDeployed = None
                   VirtualSafetyCarEnded = None
-                  Number = this.Laps.Length + 1 }
+                  Number = this.Laps.Length + 1
+                  }
 
             this.Laps <- Array.append this.Laps [| lap |]
+            this.CurrentLap <- lap.Number
+
+        member this.Apply(event: SafetyCarDeployed) =
+            this.Laps <-
+                this.Laps
+                |> updateLap event.CurrentLap (fun lap ->
+                       { lap with
+                             SafetyCarDeployed = Some event.DeployedTime
+                              })
+            this.SafetyCarOnTrack <- true
+            ()
 
 
     type Driver() =
