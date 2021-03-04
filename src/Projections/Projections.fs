@@ -82,6 +82,9 @@ module Projections =
             
             self.ProjectEvent<SafetyCarDeployed>(self.ApplySafetyCarDeployed)
             |> ignore
+            
+            self.ProjectEvent<SafetyCarRecalled>(self.ApplySafetyCarRecalled)
+            |> ignore
 
         //self.DeleteEvent<RaceStarted>() |> ignore
 
@@ -199,6 +202,15 @@ module Projections =
             projection.SafetyCarOnTrack <- true
 
             ()
+            
+        member this.ApplySafetyCarRecalled (projection:RaceSummary) (event: SafetyCarRecalled) =
+            projection.Laps <-
+                projection.Laps
+                |> updateLap event.CurrentLap (fun lap ->
+                       { lap with
+                             SafetyCarEnded = Some event.RecallTime })
+                
+            projection.SafetyCarOnTrack <- false
 
     type Pitstop =
         { PitLaneEntryTime: DateTimeOffset

@@ -60,3 +60,7 @@ module Events =
     type SafetyCarDeployed(deployedTime:DateTimeOffset, currentLap:int) =
         member this.DeployedTime = deployedTime
         member this.CurrentLap = currentLap
+        
+    type SafetyCarRecalled(recallTime:DateTimeOffset, currentLap:int) =
+        member this.RecallTime = recallTime
+        member this.CurrentLap = currentLap

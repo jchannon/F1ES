@@ -143,6 +143,16 @@ module Aggregates =
                               })
             this.SafetyCarOnTrack <- true
             ()
+            
+        member this.Apply(event: SafetyCarRecalled) =
+            this.Laps <-
+                this.Laps
+                |> updateLap event.CurrentLap (fun lap ->
+                       { lap with
+                             SafetyCarEnded = Some event.RecallTime
+                              })
+            this.SafetyCarOnTrack <- false
+            ()
 
 
     type Driver() =

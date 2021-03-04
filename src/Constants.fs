@@ -41,3 +41,6 @@ module Constants =
     
     [<Literal>]
     let DeploySafetyCar = "deploysafetycar"
+    
+    [<Literal>]
+    let RecallSafetyCar = "recallsafetycar"

@@ -692,6 +692,47 @@ module CommandHandlers =
 
                 session.SaveChanges()
                 Ok()
+                
+    let recallSafetyCar (store: IDocumentStore) (raceId: Guid) (path: string) =
+        use session = store.OpenSession()
+
+        let race =
+            session.Events.AggregateStream<Race>(raceId)
+
+        match race.RaceStarted, race.RaceEnded with
+        | Some _, Some _
+        | None, Some _ ->
+            Error
+                { Detail = "The race has already ended"
+                  Status = 409
+                  Title = "Lap command failed"
+                  Instance = path
+                  Type = "https://example.net/validation-error" }
+        | None, None ->
+            Error
+                { Detail = "The race hasn't started"
+                  Status = 409
+                  Title = "Lap command failed"
+                  Instance = path
+                  Type = "https://example.net/validation-error" }
+        | Some _, None _ ->
+            
+            match race.SafetyCarOnTrack with
+            |false ->
+                Error
+                    { Detail = "The safety car is not on the track to be recalled"
+                      Status = 409
+                      Title = "Lap command failed"
+                      Instance = path
+                      Type = "https://example.net/validation-error" }
+            |true ->
+                let safetyCarRecalled = SafetyCarRecalled(DateTimeOffset.UtcNow, race.CurrentLap)
+
+                session.Events.Append(raceId, safetyCarRecalled)
+                |> ignore
+
+                session.SaveChanges()
+                Ok()
 
 
     let updateLap (store: IDocumentStore) (raceId: Guid) (model: LapUpdateInput) (path: string) =
@@ -701,6 +742,7 @@ module CommandHandlers =
             match model.Command.ToLower() with
             | StartLap -> startLap store raceId path
             | DeploySafetyCar -> deploySafetyCar store raceId path
+            | RecallSafetyCar -> recallSafetyCar store raceId path
             | _ ->
                 Error
                     { Detail = "Lap command failed, unknown command"

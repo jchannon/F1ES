@@ -3,7 +3,7 @@
 POST http://localhost:5000/race
 Content-Type: application/json
 
-{"trackname":"Silverstone","country":"UK","scheduledstarttime": "2021-02-09T21:05:24Z", "title": "French GP 20212643"}
+{"trackname":"Silverstone","country":"UK","scheduledstarttime": "2021-02-09T21:05:24Z", "title": "French GP 202912643"}
 
 > {% client.global.set("location",response.headers.valueOf("location")) %}
 
@@ -146,9 +146,16 @@ Content-Type: application/json
 
 {"command":"startlap"}
 
-###Start new lap
+###Deploy safety car
 #@no-log
 POST {{location}}/laps
 Content-Type: application/json
 
 {"command":"deploysafetycar"}
+
+###Recall safety car
+#@no-log
+POST {{location}}/laps
+Content-Type: application/json
+
+{"command":"recallsafetycar"}

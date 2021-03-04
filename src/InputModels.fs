@@ -194,7 +194,7 @@ module InputModels =
 
                     Error(RequestErrors.unprocessableEntity (problemDetailsHandler problemDetails))
 
-    let UpdateLapCommands = [| StartLap; DeploySafetyCar |]
+    let UpdateLapCommands = [| StartLap; DeploySafetyCar; RecallSafetyCar |]
 
     [<CLIMutable>]
     type LapUpdateInput =
