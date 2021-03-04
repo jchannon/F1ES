@@ -25,6 +25,7 @@ module Projections =
         member val ScheduledStartTime: DateTimeOffset = DateTimeOffset.MinValue with get, set
         member val CurrentLap = 0 with get, set
         member val SafetyCarOnTrack = false with get,set
+        member val VirtualSafetyCarDeployed = false with get,set
 
     type RaceProjection() as self =
         inherit ViewProjection<RaceSummary, Guid>()
@@ -84,6 +85,12 @@ module Projections =
             |> ignore
             
             self.ProjectEvent<SafetyCarRecalled>(self.ApplySafetyCarRecalled)
+            |> ignore
+            
+            self.ProjectEvent<VirtualSafetyCarDeployed>(self.ApplyVirtualSafetyCarDeployed)
+            |> ignore
+            
+            self.ProjectEvent<VirtualSafetyCarRecalled>(self.ApplyVirtualSafetyCarRecalled)
             |> ignore
 
         //self.DeleteEvent<RaceStarted>() |> ignore
@@ -201,7 +208,6 @@ module Projections =
                 
             projection.SafetyCarOnTrack <- true
 
-            ()
             
         member this.ApplySafetyCarRecalled (projection:RaceSummary) (event: SafetyCarRecalled) =
             projection.Laps <-
@@ -211,6 +217,25 @@ module Projections =
                              SafetyCarEnded = Some event.RecallTime })
                 
             projection.SafetyCarOnTrack <- false
+            
+        member this.ApplyVirtualSafetyCarDeployed (projection:RaceSummary) (event: VirtualSafetyCarDeployed) =
+            projection.Laps <-
+                projection.Laps
+                |> updateLap event.CurrentLap (fun lap ->
+                       { lap with
+                             VirtualSafetyCarDeployed = Some event.DeployedTime })
+                
+            projection.VirtualSafetyCarDeployed <- true
+            
+        member this.ApplyVirtualSafetyCarRecalled (projection:RaceSummary) (event: VirtualSafetyCarRecalled) =
+            projection.Laps <-
+                projection.Laps
+                |> updateLap event.CurrentLap (fun lap ->
+                       { lap with
+                             VirtualSafetyCarEnded = Some event.RecallTime
+                              })
+            projection.VirtualSafetyCarDeployed <- false
+            
 
     type Pitstop =
         { PitLaneEntryTime: DateTimeOffset

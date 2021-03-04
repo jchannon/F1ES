@@ -123,8 +123,8 @@ module CommandHandlers =
 
             session.SaveChanges()
             Ok()
-            
-    //TODO Race's have to be stopped after 2 hours       
+
+    //TODO Race's have to be stopped after 2 hours
 
     let restartRace (store: IDocumentStore) (streamId: Guid) (path: string) =
         use session = store.OpenSession()
@@ -611,8 +611,8 @@ module CommandHandlers =
             .Query<PitstopSummary>()
             .Where(fun x -> x.Id = raceId)
             .ToArray()
-            
-    let getPitStopsByCar (store: IDocumentStore) (raceId: Guid) (carId:Guid) =
+
+    let getPitStopsByCar (store: IDocumentStore) (raceId: Guid) (carId: Guid) =
         use sessions = store.OpenSession()
 
         sessions
@@ -651,7 +651,7 @@ module CommandHandlers =
 
             session.SaveChanges()
             Ok()
-            
+
     let deploySafetyCar (store: IDocumentStore) (raceId: Guid) (path: string) =
         use session = store.OpenSession()
 
@@ -675,24 +675,35 @@ module CommandHandlers =
                   Instance = path
                   Type = "https://example.net/validation-error" }
         | Some _, None _ ->
-            
+
             match race.SafetyCarOnTrack with
-            |true ->
+            | true ->
                 Error
                     { Detail = "The safety car has already been deployed"
                       Status = 409
                       Title = "Lap command failed"
                       Instance = path
                       Type = "https://example.net/validation-error" }
-            |false ->
-                let safetyCarDeployed = SafetyCarDeployed(DateTimeOffset.UtcNow, race.CurrentLap)
+            | false ->
+                match race.VirtualSafetyCarDeployed with
+                | true ->
+                    Error
+                        { Detail =
+                              "The virtual safety car has already been deployed. Recall the virtual safety car before deploying the safety car"
+                          Status = 409
+                          Title = "Lap command failed"
+                          Instance = path
+                          Type = "https://example.net/validation-error" }
+                | false ->
+                    let safetyCarDeployed =
+                        SafetyCarDeployed(DateTimeOffset.UtcNow, race.CurrentLap)
 
-                session.Events.Append(raceId, safetyCarDeployed)
-                |> ignore
+                    session.Events.Append(raceId, safetyCarDeployed)
+                    |> ignore
 
-                session.SaveChanges()
-                Ok()
-                
+                    session.SaveChanges()
+                    Ok()
+
     let recallSafetyCar (store: IDocumentStore) (raceId: Guid) (path: string) =
         use session = store.OpenSession()
 
@@ -716,23 +727,137 @@ module CommandHandlers =
                   Instance = path
                   Type = "https://example.net/validation-error" }
         | Some _, None _ ->
-            
+
             match race.SafetyCarOnTrack with
-            |false ->
+            | false ->
                 Error
                     { Detail = "The safety car is not on the track to be recalled"
                       Status = 409
                       Title = "Lap command failed"
                       Instance = path
                       Type = "https://example.net/validation-error" }
-            |true ->
-                let safetyCarRecalled = SafetyCarRecalled(DateTimeOffset.UtcNow, race.CurrentLap)
+            | true ->
+                match race.VirtualSafetyCarDeployed with
+                | true ->
+                    Error
+                        { Detail = "You cannot recall the safety car when the virtual safety car has been deployed"
+                          Status = 409
+                          Title = "Lap command failed"
+                          Instance = path
+                          Type = "https://example.net/validation-error" }
+                | false ->
+                    let safetyCarRecalled =
+                        SafetyCarRecalled(DateTimeOffset.UtcNow, race.CurrentLap)
 
-                session.Events.Append(raceId, safetyCarRecalled)
-                |> ignore
+                    session.Events.Append(raceId, safetyCarRecalled)
+                    |> ignore
 
-                session.SaveChanges()
-                Ok()
+                    session.SaveChanges()
+                    Ok()
+
+    let deployVirtualSafetyCar (store: IDocumentStore) (raceId: Guid) (path: string) =
+        use session = store.OpenSession()
+
+        let race =
+            session.Events.AggregateStream<Race>(raceId)
+
+        match race.RaceStarted, race.RaceEnded with
+        | Some _, Some _
+        | None, Some _ ->
+            Error
+                { Detail = "The race has already ended"
+                  Status = 409
+                  Title = "Lap command failed"
+                  Instance = path
+                  Type = "https://example.net/validation-error" }
+        | None, None ->
+            Error
+                { Detail = "The race hasn't started"
+                  Status = 409
+                  Title = "Lap command failed"
+                  Instance = path
+                  Type = "https://example.net/validation-error" }
+        | Some _, None _ ->
+
+            match race.VirtualSafetyCarDeployed with
+            | true ->
+                Error
+                    { Detail = "The virtual safety car has already been deployed"
+                      Status = 409
+                      Title = "Lap command failed"
+                      Instance = path
+                      Type = "https://example.net/validation-error" }
+            | false ->
+                match race.SafetyCarOnTrack with
+                | true ->
+                    Error
+                        { Detail =
+                              "The safety car has already been deployed. Recall the safety car before deploying the virtual safety car"
+                          Status = 409
+                          Title = "Lap command failed"
+                          Instance = path
+                          Type = "https://example.net/validation-error" }
+                | false ->
+                    let virtualSafetyCarDeployed =
+                        VirtualSafetyCarDeployed(DateTimeOffset.UtcNow, race.CurrentLap)
+
+                    session.Events.Append(raceId, virtualSafetyCarDeployed)
+                    |> ignore
+
+                    session.SaveChanges()
+                    Ok()
+                    
+                    
+    let recallVirtualSafetyCar (store: IDocumentStore) (raceId: Guid) (path: string) =
+        use session = store.OpenSession()
+
+        let race =
+            session.Events.AggregateStream<Race>(raceId)
+
+        match race.RaceStarted, race.RaceEnded with
+        | Some _, Some _
+        | None, Some _ ->
+            Error
+                { Detail = "The race has already ended"
+                  Status = 409
+                  Title = "Lap command failed"
+                  Instance = path
+                  Type = "https://example.net/validation-error" }
+        | None, None ->
+            Error
+                { Detail = "The race hasn't started"
+                  Status = 409
+                  Title = "Lap command failed"
+                  Instance = path
+                  Type = "https://example.net/validation-error" }
+        | Some _, None _ ->
+
+            match race.VirtualSafetyCarDeployed with
+            | false ->
+                Error
+                    { Detail = "The virtual safety car has not been deployed and can't be recalled"
+                      Status = 409
+                      Title = "Lap command failed"
+                      Instance = path
+                      Type = "https://example.net/validation-error" }
+            | true ->
+                match race.SafetyCarOnTrack with
+                | true ->
+                    Error
+                        { Detail = "You cannot recall the virtual safety car when the safety car has been deployed"
+                          Status = 409
+                          Title = "Lap command failed"
+                          Instance = path
+                          Type = "https://example.net/validation-error" }
+                | false ->
+                    let virtualSafetyCarRecalled =
+                        VirtualSafetyCarRecalled(DateTimeOffset.UtcNow, race.CurrentLap)
+
+                    session.Events.Append(raceId, virtualSafetyCarRecalled)
+                    |> ignore
+
+                    session.SaveChanges()
+                    Ok()
 
 
     let updateLap (store: IDocumentStore) (raceId: Guid) (model: LapUpdateInput) (path: string) =
@@ -743,6 +868,8 @@ module CommandHandlers =
             | StartLap -> startLap store raceId path
             | DeploySafetyCar -> deploySafetyCar store raceId path
             | RecallSafetyCar -> recallSafetyCar store raceId path
+            | DeployVirtualSafetyCar -> deployVirtualSafetyCar store raceId path
+            | RecallVirtualSafetyCar -> recallVirtualSafetyCar store raceId path
             | _ ->
                 Error
                     { Detail = "Lap command failed, unknown command"

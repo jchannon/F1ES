@@ -159,3 +159,17 @@ POST {{location}}/laps
 Content-Type: application/json
 
 {"command":"recallsafetycar"}
+
+###Deploy virtual safety car
+#@no-log
+POST {{location}}/laps
+Content-Type: application/json
+
+{"command":"deployvirtualsafetycar"}
+
+###Recall virtual safety car
+#@no-log
+POST {{location}}/laps
+Content-Type: application/json
+
+{"command":"recallvirtualsafetycar"}

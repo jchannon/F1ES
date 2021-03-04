@@ -29,6 +29,7 @@ module Aggregates =
         member val ScheduledStartTime: DateTimeOffset option = None with get, set
         member val CurrentLap = 0 with get, set
         member val SafetyCarOnTrack = false with get,set
+        member val VirtualSafetyCarDeployed = false with get,set
 
 
         member this.Apply(event: RaceScheduled) =
@@ -152,6 +153,26 @@ module Aggregates =
                              SafetyCarEnded = Some event.RecallTime
                               })
             this.SafetyCarOnTrack <- false
+            ()
+            
+        member this.Apply(event: VirtualSafetyCarDeployed) =
+            this.Laps <-
+                this.Laps
+                |> updateLap event.CurrentLap (fun lap ->
+                       { lap with
+                             VirtualSafetyCarDeployed = Some event.DeployedTime
+                              })
+            this.VirtualSafetyCarDeployed <- true
+            ()
+            
+        member this.Apply(event: VirtualSafetyCarRecalled) =
+            this.Laps <-
+                this.Laps
+                |> updateLap event.CurrentLap (fun lap ->
+                       { lap with
+                             VirtualSafetyCarEnded = Some event.RecallTime
+                              })
+            this.VirtualSafetyCarDeployed <- false
             ()
 
 
