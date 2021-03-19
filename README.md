@@ -19,17 +19,9 @@ DriverPenaltyApplied
 DriverBlackFlagged  
 DriverEngagedDRS
 DriverDisEngagedDRS 
-TyreChanged
-NoseChanged  
-DownforceChanged  
-LapStarted  
-LapEnded  
 DriverCrashed  
 DriverRetired  
-SafetyCarDeployed  
-SafetyCarEnded    
-VirtualSafetyCarDeployed  
-VirtualSafetyCarEnded  
+ 
 
 
 ### Aggregates

@@ -63,7 +63,7 @@ module Projections =
             self.ProjectEvent<RaceDelayed>(self.ApplyRaceDelayed)
             |> ignore
 
-            self.ProjectEvent<CarRegistered>(self.ApplyCarRegistered)
+            self.ProjectEvent<CarsRegistered>(self.ApplyCarsRegistered)
             |> ignore
 
             self.ProjectEvent<CarEnteredPitLane>(self.ApplyCarEnteredPitLane)
@@ -154,7 +154,7 @@ module Projections =
             projection.ScheduledStartTime <- event.ProposedRaceStartTime
             ()
 
-        member this.ApplyCarRegistered (projection: RaceSummary) (event: CarRegistered) =
+        member this.ApplyCarsRegistered (projection: RaceSummary) (event: CarsRegistered) =
             projection.Cars <- event.Cars
             ()
 

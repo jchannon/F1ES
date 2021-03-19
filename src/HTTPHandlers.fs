@@ -112,7 +112,7 @@ module HTTPHandlers =
                 return! halHandler returnedRace.Cars next ctx
             }
 
-    let registerCarHandler (raceId: Guid): HttpHandler =
+    let registerCarsHandler (raceId: Guid): HttpHandler =
         fun (next: HttpFunc) (ctx: HttpContext) ->
             task {
                 let! model = tryBindJsonBody<RegisterCarInput> (ctx)
@@ -123,7 +123,7 @@ module HTTPHandlers =
                         ctx.RequestServices.GetRequiredService<IDocumentStore>()
 
                     let result =
-                        CommandHandlers.registerCar store raceId x (ctx.Request.Path.ToString())
+                        CommandHandlers.registerCars store raceId x (ctx.Request.Path.ToString())
 
                     match result with
                     | Ok carId ->

@@ -78,7 +78,7 @@ module Aggregates =
             this.ScheduledStartTime <- Some event.ProposedRaceStartTime
             ()
 
-        member this.Apply(event: CarRegistered) =
+        member this.Apply(event: CarsRegistered) =
             this.Cars <- event.Cars
             ()
 

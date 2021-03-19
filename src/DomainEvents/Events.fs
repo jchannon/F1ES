@@ -32,7 +32,7 @@ module Events =
     type RaceDelayed(proposedRaceStartTime: DateTimeOffset) =
         member this.ProposedRaceStartTime = proposedRaceStartTime
 
-    type CarRegistered(cars: Car []) =
+    type CarsRegistered(cars: Car []) =
         member this.Cars = cars
 
     type CarEnteredPitLane(carId: Guid, entryTime: DateTimeOffset) =

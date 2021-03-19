@@ -45,7 +45,7 @@ type Startup(configuration: IConfiguration) =
                  GET_HEAD >=> routef "/race/%O/pitstops/%O" getPitStopsByCarHandler
 
                  GET_HEAD >=> routef "/race/%O/cars" getCarsHandler
-                 POST >=> routef "/race/%O/cars" registerCarHandler
+                 POST >=> routef "/race/%O/cars" registerCarsHandler
                  OPTIONS >=> routef "/race/%O/cars" optionsRaceCarHandler
 
                  GET_HEAD >=> routef "/race/%O/cars/%O" getCarHandler

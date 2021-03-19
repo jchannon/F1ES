@@ -666,7 +666,7 @@ module CommandHandlers =
 
         result
 
-    let registerCar (store: IDocumentStore) (raceId: Guid) (message: RegisterCarInput) path =
+    let registerCars (store: IDocumentStore) (raceId: Guid) (message: RegisterCarInput) path =
         use session = store.OpenSession()
 
         let carId = Guid.NewGuid()
@@ -695,7 +695,7 @@ module CommandHandlers =
                   Id = carId })
             |> Array.ofList
 
-        let carRegistered = CarRegistered(cars)
+        let carRegistered = CarsRegistered(cars)
 
         session.Events.Append(raceId, carRegistered)
         |> ignore
