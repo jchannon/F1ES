@@ -221,6 +221,13 @@ module Aggregates =
                 |> updateElement event.CarId (fun car ->
                        { car with
                              Driver = { car.Driver with Retired = true } })
+                
+        member this.Apply(event: DriverBlackFlagged) =
+            this.Cars <-
+                this.Cars
+                |> updateElement event.CarId (fun car ->
+                       { car with
+                             Driver = { car.Driver with BlackFlagged = true } })
 
 
 

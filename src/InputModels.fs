@@ -116,7 +116,8 @@ module InputModels =
            ChangeDownforce
            ApplyPenaltyPoints
            ApplyDriveThroughPenalty
-           RetireDriver |]
+           RetireDriver
+           BlackFlag |]
 
     [<CLIMutable>]
     type CarStatusUpdateInput =

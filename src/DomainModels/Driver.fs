@@ -7,5 +7,4 @@ type Driver =
           BlackFlagged: bool
           PenaltyPoints: int
           DriveThroughPenaltyInSeconds:int
-          Retired: bool
-          Crashed: bool }
+          Retired: bool }

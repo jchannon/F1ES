@@ -68,3 +68,6 @@ module Constants =
     
     [<Literal>]
     let RetireDriver = "retiredriver"
+    
+    [<Literal>]
+    let BlackFlag = "blackflag"

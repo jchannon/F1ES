@@ -95,3 +95,6 @@ module Events =
         
     type DriverRetired(carId: Guid) =
         member this.CarId = carId
+        
+    type DriverBlackFlagged(carId: Guid) =
+        member this.CarId = carId
