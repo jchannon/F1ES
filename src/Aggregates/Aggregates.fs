@@ -187,6 +187,13 @@ module Aggregates =
                 |> updateElement event.CarId (fun car ->
                        { car with
                              NoseChanged = Array.append car.TyreChanged [| event.NoseChangedTime |] })
+                
+        member this.Apply(event: DownforceChanged) =
+            this.Cars <-
+                this.Cars
+                |> updateElement event.CarId (fun car ->
+                       { car with
+                             DownforceChanged = Array.append car.TyreChanged [| event.DownforceChangedTime |] })
 
 
 

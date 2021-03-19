@@ -80,3 +80,7 @@ module Events =
     type NoseChanged(carId: Guid, noseChangedTime: DateTimeOffset) =
         member this.CarId = carId
         member this.NoseChangedTime = noseChangedTime
+        
+    type DownforceChanged(carId: Guid, downforceChangedTime: DateTimeOffset) =
+        member this.CarId = carId
+        member this.DownforceChangedTime = downforceChangedTime

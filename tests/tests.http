@@ -145,6 +145,13 @@ Content-Type: application/json
 
 {"command":"changenose"}
 
+### Change downforce
+#@no-log
+POST {{location}}/cars/3972c937-cf8e-4481-9a6a-9bfaf4be5356
+Content-Type: application/json
+
+{"command":"changedownforce"}
+
 ###Pit stops
 #@no-log
 GET {{location}}/pitstops

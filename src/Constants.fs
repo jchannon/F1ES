@@ -56,3 +56,6 @@ module Constants =
     
     [<Literal>]
     let ChangeNose = "changenose"
+    
+    [<Literal>]
+    let ChangeDownforce = "changedownforce"

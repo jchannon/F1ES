@@ -112,7 +112,8 @@ module InputModels =
            EnterPitBox
            ExitPitBox
            ChangeTyre
-           ChangeNose |]
+           ChangeNose
+           ChangeDownforce |]
 
     [<CLIMutable>]
     type CarStatusUpdateInput =
