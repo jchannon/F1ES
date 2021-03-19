@@ -675,6 +675,40 @@ module CommandHandlers =
 
             session.SaveChanges()
             Ok()
+            
+    let recordDriveThroughPenalty (store: IDocumentStore) (raceId: Guid) (carId: Guid) (model: CarStatusUpdateInput) (path: string) =
+        use session = store.OpenSession()
+
+        let race =
+            session.Events.AggregateStream<Race>(raceId)
+
+        match race.RaceStarted, race.RaceEnded with
+        | Some _, Some _
+        | None, Some _ ->
+            Error
+                { Detail = "The race has already ended"
+                  Status = 409
+                  Title = "Car command failed"
+                  Instance = path
+                  Type = "https://example.net/validation-error" }
+        | None, None ->
+            Error
+                { Detail = "The race hasn't started"
+                  Status = 409
+                  Title = "Car command failed"
+                  Instance = path
+                  Type = "https://example.net/validation-error" }
+        
+        | Some _, None _ ->
+            
+            let driveThroughPenaltyApplied =
+                DriveThroughPenaltyApplied(carId, model.DriveThroughPenalty.Value)
+
+            session.Events.Append(raceId, driveThroughPenaltyApplied)
+            |> ignore
+
+            session.SaveChanges()
+            Ok()
 
 
     let updateCar (store: IDocumentStore) (raceId: Guid) (carId: Guid) (model: CarStatusUpdateInput) (path: string) =
@@ -690,6 +724,7 @@ module CommandHandlers =
             | ChangeNose -> recordNoseChanged store raceId carId path
             | ChangeDownforce -> recordDownforceChanged store raceId carId path
             | ApplyPenaltyPoints -> recordPenaltyPoints store raceId carId model path
+            | ApplyDriveThroughPenalty -> recordDriveThroughPenalty store raceId carId model path
             | _ ->
                 Error
                     { Detail = "Car command failed, unknown command"

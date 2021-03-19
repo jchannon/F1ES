@@ -114,12 +114,14 @@ module InputModels =
            ChangeTyre
            ChangeNose
            ChangeDownforce
-           ApplyPenaltyPoints |]
+           ApplyPenaltyPoints
+           ApplyDriveThroughPenalty |]
 
     [<CLIMutable>]
     type CarStatusUpdateInput =
         { Command: string
-          PenaltyPoints:int option}
+          PenaltyPoints:int option
+          DriveThroughPenalty:int option}
         member this.HasErrors() =
             let statusValidation =
                 match UpdateCarCommands
@@ -138,8 +140,18 @@ module InputModels =
                                 |_ -> None
                     | None -> Some "Penalty points are required"
                 | _ -> None
+                
+            let driveThroughPenaltyValidation =
+                match this.Command with
+                | ApplyDriveThroughPenalty ->
+                    match this.DriveThroughPenalty with
+                    | Some x -> match x with
+                                | x when x <= 0 -> Some "Drive through penalty must be greater than zero" //Could remove penalty points by applying -3
+                                |_ -> None
+                    | None -> Some "Drive through penalty is required"
+                | _ -> None
 
-            [| statusValidation; penaltyPointsValidation |] |> Array.choose id
+            [| statusValidation; penaltyPointsValidation; driveThroughPenaltyValidation |] |> Array.choose id
 
         interface IProblemDetailsValidation<CarStatusUpdateInput> with
             member this.Validate path =

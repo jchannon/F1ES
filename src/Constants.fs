@@ -62,3 +62,6 @@ module Constants =
     
     [<Literal>]
     let ApplyPenaltyPoints = "applypenaltypoints"
+    
+    [<Literal>]
+    let ApplyDriveThroughPenalty = "applydrivethroughpenalty"

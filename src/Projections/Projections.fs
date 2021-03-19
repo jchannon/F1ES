@@ -101,8 +101,11 @@ module Projections =
 
             self.ProjectEvent<DownforceChanged>(self.ApplyDownforceChanged)
             |> ignore
-            
+
             self.ProjectEvent<PenaltyPointsApplied>(self.ApplyPenaltyPointsApplied)
+            |> ignore
+            
+            self.ProjectEvent<DriveThroughPenaltyApplied>(self.ApplyDriveThroughPenaltyApplied)
             |> ignore
 
         //self.DeleteEvent<RaceStarted>() |> ignore
@@ -278,6 +281,17 @@ module Projections =
                              Driver =
                                  { car.Driver with
                                        PenaltyPoints = car.Driver.PenaltyPoints + event.PenaltyPoints } })
+
+        member this.ApplyDriveThroughPenaltyApplied (projection: RaceSummary) (event: DriveThroughPenaltyApplied) =
+            projection.Cars <-
+                projection.Cars
+                |> updateElement event.CarId (fun car ->
+                       { car with
+                             Driver =
+                                 { car.Driver with
+                                       DriveThroughPenaltyInSeconds =
+                                           car.Driver.DriveThroughPenaltyInSeconds
+                                           + event.DriveThroughPenaltyInSeconds } })
 
 
 
