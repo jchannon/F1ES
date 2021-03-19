@@ -113,6 +113,9 @@ module Projections =
             
             self.ProjectEvent<DriverBlackFlagged>(self.ApplyDriverBlackFlagged)
             |> ignore
+            
+            self.ProjectEvent<CarCrashed>(self.ApplyCarCrashed)
+            |> ignore
 
         //self.DeleteEvent<RaceStarted>() |> ignore
 
@@ -306,12 +309,19 @@ module Projections =
                        { car with
                              Driver = { car.Driver with Retired = true } })
         
-         member this.ApplyDriverBlackFlagged (projection: RaceSummary) (event: DriverBlackFlagged) =
+        member this.ApplyDriverBlackFlagged (projection: RaceSummary) (event: DriverBlackFlagged) =
             projection.Cars <-
                 projection.Cars
                 |> updateElement event.CarId (fun car ->
                        { car with
                              Driver = { car.Driver with BlackFlagged = true } })
+                
+        member this.ApplyCarCrashed (projection: RaceSummary) (event: CarCrashed) =
+            projection.Cars <-
+                projection.Cars
+                |> updateElement event.CarId (fun car ->
+                       { car with
+                             Crashes = Array.append car.Crashes [| event.CrashTime |] })
 
     type Pitstop =
         { PitLaneEntryTime: DateTimeOffset

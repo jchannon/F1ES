@@ -82,7 +82,7 @@ GET {{location}}/cars
 POST {{location}}/cars
 Content-Type: application/json
 
-{"cars":[{"team": "Ferrari","driverid": "01784ab9-8525-453a-9ecc-48b175e2e1f8"}]}
+{"cars":[{"team": "Ferrari","driverid": "01784b08-2617-4368-832c-ae0454296a51"}]}
 
 ### Get a car
 #@no-log
@@ -105,80 +105,88 @@ GET http://localhost:5000/drivers/0177ba18-975b-4570-a24c-e2c69a651160
 
 ### Car enters pit lane
 #@no-log
-POST {{location}}/cars/3fad9f42-b391-47b3-84f2-45821dd10804
+POST {{location}}/cars/8d47c788-bd59-40b7-a43e-4ee32f12965a
 Content-Type: application/json
 
 {"command":"enterpitlane"}
 
 ### Car exits pit lane
 #@no-log
-POST {{location}}/cars/3fad9f42-b391-47b3-84f2-45821dd10804
+POST {{location}}/cars/8d47c788-bd59-40b7-a43e-4ee32f12965a
 Content-Type: application/json
 
 {"command":"exitpitlane"}
 
 ### Car enters pit box
 #@no-log
-POST {{location}}/cars/3fad9f42-b391-47b3-84f2-45821dd10804
+POST {{location}}/cars/8d47c788-bd59-40b7-a43e-4ee32f12965a
 Content-Type: application/json
 
 {"command":"enterpitbox"}
 
 ### Car exits pit box
 #@no-log
-POST {{location}}/cars/3fad9f42-b391-47b3-84f2-45821dd10804
+POST {{location}}/cars/8d47c788-bd59-40b7-a43e-4ee32f12965a
 Content-Type: application/json
 
 {"command":"exitpitbox"}
 
 ### Change tyre
 #@no-log
-POST {{location}}/cars/3fad9f42-b391-47b3-84f2-45821dd10804
+POST {{location}}/cars/8d47c788-bd59-40b7-a43e-4ee32f12965a
 Content-Type: application/json
 
 {"command":"changetyre"}
 
 ### Change nose
 #@no-log
-POST {{location}}/cars/3fad9f42-b391-47b3-84f2-45821dd10804
+POST {{location}}/cars/8d47c788-bd59-40b7-a43e-4ee32f12965a
 Content-Type: application/json
 
 {"command":"changenose"}
 
 ### Change downforce
 #@no-log
-POST {{location}}/cars/3fad9f42-b391-47b3-84f2-45821dd10804
+POST {{location}}/cars/8d47c788-bd59-40b7-a43e-4ee32f12965a
 Content-Type: application/json
 
 {"command":"changedownforce"}
 
 ### Apply penalty points
 #@no-log
-POST {{location}}/cars/3fad9f42-b391-47b3-84f2-45821dd10804
+POST {{location}}/cars/8d47c788-bd59-40b7-a43e-4ee32f12965a
 Content-Type: application/json
 
 {"command":"applypenaltypoints", "penaltypoints": 4}
 
 ### Apply drive through penalty
 #@no-log
-POST {{location}}/cars/3fad9f42-b391-47b3-84f2-45821dd10804
+POST {{location}}/cars/8d47c788-bd59-40b7-a43e-4ee32f12965a
 Content-Type: application/json
 
 {"command":"applydrivethroughpenalty", "drivethroughpenalty": 10}
 
 ### Retire driver
 #@no-log
-POST {{location}}/cars/3fad9f42-b391-47b3-84f2-45821dd10804
+POST {{location}}/cars/8d47c788-bd59-40b7-a43e-4ee32f12965a
 Content-Type: application/json
 
 {"command":"retiredriver"}
 
 ### Black flag driver
 #@no-log
-POST {{location}}/cars/3fad9f42-b391-47b3-84f2-45821dd10804
+POST {{location}}/cars/8d47c788-bd59-40b7-a43e-4ee32f12965a
 Content-Type: application/json
 
 {"command":"blackflag"}
+
+
+### Car crash
+#@no-log
+POST {{location}}/cars/8d47c788-bd59-40b7-a43e-4ee32f12965a
+Content-Type: application/json
+
+{"command":"carcrash"}
 
 ###Pit stops
 #@no-log
@@ -186,7 +194,7 @@ GET {{location}}/pitstops
 
 ###Pit stops by car
 #@no-log
-GET {{location}}/pitstops/3fad9f42-b391-47b3-84f2-45821dd10804
+GET {{location}}/pitstops/8d47c788-bd59-40b7-a43e-4ee32f12965a
 
 ###Start new lap
 #@no-log

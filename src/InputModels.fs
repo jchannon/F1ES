@@ -117,7 +117,8 @@ module InputModels =
            ApplyPenaltyPoints
            ApplyDriveThroughPenalty
            RetireDriver
-           BlackFlag |]
+           BlackFlag
+           CarCrash |]
 
     [<CLIMutable>]
     type CarStatusUpdateInput =

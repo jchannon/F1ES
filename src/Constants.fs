@@ -71,3 +71,6 @@ module Constants =
     
     [<Literal>]
     let BlackFlag = "blackflag"
+    
+    [<Literal>]
+    let CarCrash = "carcrash"

@@ -14,4 +14,5 @@ type Car =
       InPitBox:bool
       EnteredPitBox: DateTimeOffset []
       ExitedPitBox: DateTimeOffset []
+      Crashes: DateTimeOffset []
       Id : Guid}

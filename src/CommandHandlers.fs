@@ -861,7 +861,53 @@ module CommandHandlers =
             session.SaveChanges()
             Ok()
 
+    let recordCarCrash (store: IDocumentStore) (raceId: Guid) (carId: Guid) (path: string) =
+        use session = store.OpenSession()
 
+        let race =
+            session.Events.AggregateStream<Race>(raceId)
+
+        match race.RaceStarted, race.RaceEnded with
+        | Some _, Some _
+        | None, Some _ ->
+            Error
+                { Detail = "The race has already ended"
+                  Status = 409
+                  Title = "Car command failed"
+                  Instance = path
+                  Type = "https://example.net/validation-error" }
+        | None, None ->
+            Error
+                { Detail = "The race hasn't started"
+                  Status = 409
+                  Title = "Car command failed"
+                  Instance = path
+                  Type = "https://example.net/validation-error" }
+        | Some _, None _ ->
+            let car =
+                race.Cars |> Array.find (fun x -> x.Id = carId)
+
+            match car.Driver.Retired, car.Driver.BlackFlagged with
+            | true, true
+            | false, true
+            | true, false ->
+                Error
+                    { Detail = "The driver has retired/black flagged"
+                      Status = 409
+                      Title = "Car command failed"
+                      Instance = path
+                      Type = "https://example.net/validation-error" }
+            | false, false ->
+                
+                    let carCrashed =
+                        CarCrashed(carId, DateTimeOffset.UtcNow)
+
+                    session.Events.Append(raceId, carCrashed)
+                    |> ignore
+
+                    session.SaveChanges()
+                    Ok()
+                
 
     let updateCar (store: IDocumentStore) (raceId: Guid) (carId: Guid) (model: CarStatusUpdateInput) (path: string) =
         use session = store.OpenSession()
@@ -879,6 +925,7 @@ module CommandHandlers =
             | ApplyDriveThroughPenalty -> recordDriveThroughPenalty store raceId carId model path
             | RetireDriver -> recordDriverRetired store raceId carId path
             | BlackFlag -> recordBlackFlag store raceId carId path
+            | CarCrash -> recordCarCrash store raceId carId path
             | _ ->
                 Error
                     { Detail = "Car command failed, unknown command"
@@ -914,6 +961,7 @@ module CommandHandlers =
                   EnteredPitBox = Array.empty<DateTimeOffset>
                   ExitedPitBox = Array.empty<DateTimeOffset>
                   InPitBox = false
+                  Crashes = Array.empty<DateTimeOffset>
                   Id = carId })
             |> Array.ofList
 

@@ -98,3 +98,7 @@ module Events =
         
     type DriverBlackFlagged(carId: Guid) =
         member this.CarId = carId
+        
+    type CarCrashed(carId: Guid, crashTime: DateTimeOffset) =
+        member this.CarId = carId
+        member this.CrashTime = crashTime
