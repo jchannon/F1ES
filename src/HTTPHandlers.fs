@@ -166,7 +166,7 @@ module HTTPHandlers =
                 return! halHandler halCars next ctx
             }
             
-    let addCarCommandHandler (raceId: Guid, carId: Guid): HttpHandler =
+    let updateCarHandler (raceId: Guid, carId: Guid): HttpHandler =
         fun (next: HttpFunc) (ctx: HttpContext) ->
             task {
                 let store =

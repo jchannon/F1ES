@@ -5,7 +5,7 @@ open System
 type Driver =
         { DriverId: Guid
           BlackFlagged: bool
-          PenaltyApplied: bool
-          PenaltyPointsApplied: int
+          PenaltyPoints: int
+          DriveThroughPenaltyInSeconds:int
           Retired: bool
           Crashed: bool }

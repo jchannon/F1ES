@@ -49,7 +49,7 @@ type Startup(configuration: IConfiguration) =
                  OPTIONS >=> routef "/race/%O/cars" optionsRaceCarHandler
 
                  GET_HEAD >=> routef "/race/%O/cars/%O" getCarHandler
-                 POST >=> routef "/race/%O/cars/%O" addCarCommandHandler
+                 POST >=> routef "/race/%O/cars/%O" updateCarHandler
                  OPTIONS >=> routef "/race/%O/cars/%O" optionsgetCarHandler
                  
                  POST >=> routef "/race/%O/laps" updateLapHandler

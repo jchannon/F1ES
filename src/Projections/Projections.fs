@@ -92,14 +92,17 @@ module Projections =
 
             self.ProjectEvent<VirtualSafetyCarRecalled>(self.ApplyVirtualSafetyCarRecalled)
             |> ignore
-            
+
             self.ProjectEvent<TyreChanged>(self.ApplyTyreChanged)
             |> ignore
-            
+
             self.ProjectEvent<NoseChanged>(self.ApplyNoseChanged)
             |> ignore
-            
+
             self.ProjectEvent<DownforceChanged>(self.ApplyDownforceChanged)
+            |> ignore
+            
+            self.ProjectEvent<PenaltyPointsApplied>(self.ApplyPenaltyPointsApplied)
             |> ignore
 
         //self.DeleteEvent<RaceStarted>() |> ignore
@@ -252,20 +255,29 @@ module Projections =
                 |> updateElement event.CarId (fun car ->
                        { car with
                              TyreChanged = Array.append car.TyreChanged [| event.TyreChangedTime |] })
-                
+
         member this.ApplyNoseChanged (projection: RaceSummary) (event: NoseChanged) =
             projection.Cars <-
                 projection.Cars
                 |> updateElement event.CarId (fun car ->
                        { car with
                              NoseChanged = Array.append car.NoseChanged [| event.NoseChangedTime |] })
-                
+
         member this.ApplyDownforceChanged (projection: RaceSummary) (event: DownforceChanged) =
             projection.Cars <-
                 projection.Cars
                 |> updateElement event.CarId (fun car ->
                        { car with
                              DownforceChanged = Array.append car.DownforceChanged [| event.DownforceChangedTime |] })
+
+        member this.ApplyPenaltyPointsApplied (projection: RaceSummary) (event: PenaltyPointsApplied) =
+            projection.Cars <-
+                projection.Cars
+                |> updateElement event.CarId (fun car ->
+                       { car with
+                             Driver =
+                                 { car.Driver with
+                                       PenaltyPoints = car.Driver.PenaltyPoints + event.PenaltyPoints } })
 
 
 

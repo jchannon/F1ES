@@ -15,7 +15,7 @@ These events can be triggered via HTTP. They are then recorded in a Marten event
 
 ### Events
  
-DriverPenaltyApplied  
+  
 DriverBlackFlagged  
 DriverEngagedDRS
 DriverDisEngagedDRS 

@@ -84,3 +84,7 @@ module Events =
     type DownforceChanged(carId: Guid, downforceChangedTime: DateTimeOffset) =
         member this.CarId = carId
         member this.DownforceChangedTime = downforceChangedTime
+        
+    type PenaltyPointsApplied(carId: Guid, penaltyPoints: int) =
+        member this.CarId = carId
+        member this.PenaltyPoints = penaltyPoints

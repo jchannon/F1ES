@@ -59,3 +59,6 @@ module Constants =
     
     [<Literal>]
     let ChangeDownforce = "changedownforce"
+    
+    [<Literal>]
+    let ApplyPenaltyPoints = "applypenaltypoints"

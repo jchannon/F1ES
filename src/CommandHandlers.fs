@@ -642,6 +642,39 @@ module CommandHandlers =
                       Title = "Car command failed"
                       Instance = path
                       Type = "https://example.net/validation-error" }
+                    
+    let recordPenaltyPoints (store: IDocumentStore) (raceId: Guid) (carId: Guid) (model: CarStatusUpdateInput) (path: string) =
+        use session = store.OpenSession()
+
+        let race =
+            session.Events.AggregateStream<Race>(raceId)
+
+        match race.RaceStarted, race.RaceEnded with
+        | None, Some _ ->
+            Error
+                { Detail = "The race has already ended"
+                  Status = 409
+                  Title = "Car command failed"
+                  Instance = path
+                  Type = "https://example.net/validation-error" }
+        | None, None ->
+            Error
+                { Detail = "The race hasn't started"
+                  Status = 409
+                  Title = "Car command failed"
+                  Instance = path
+                  Type = "https://example.net/validation-error" }
+        | Some _, Some _
+        | Some _, None _ ->
+            
+            let penaltyPointsApplied =
+                PenaltyPointsApplied(carId, model.PenaltyPoints.Value)
+
+            session.Events.Append(raceId, penaltyPointsApplied)
+            |> ignore
+
+            session.SaveChanges()
+            Ok()
 
 
     let updateCar (store: IDocumentStore) (raceId: Guid) (carId: Guid) (model: CarStatusUpdateInput) (path: string) =
@@ -656,6 +689,7 @@ module CommandHandlers =
             | ChangeTyre -> recordTyreChanged store raceId carId path
             | ChangeNose -> recordNoseChanged store raceId carId path
             | ChangeDownforce -> recordDownforceChanged store raceId carId path
+            | ApplyPenaltyPoints -> recordPenaltyPoints store raceId carId model path
             | _ ->
                 Error
                     { Detail = "Car command failed, unknown command"
@@ -677,8 +711,8 @@ module CommandHandlers =
                 { Driver =
                       { DriverId = x.DriverId
                         BlackFlagged = false
-                        PenaltyApplied = false
-                        PenaltyPointsApplied = 0
+                        PenaltyPoints = 0
+                        DriveThroughPenaltyInSeconds = 0
                         Retired = false
                         Crashed = false }
                   Team = x.Team

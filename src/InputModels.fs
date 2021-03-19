@@ -113,11 +113,13 @@ module InputModels =
            ExitPitBox
            ChangeTyre
            ChangeNose
-           ChangeDownforce |]
+           ChangeDownforce
+           ApplyPenaltyPoints |]
 
     [<CLIMutable>]
     type CarStatusUpdateInput =
-        { Command: string }
+        { Command: string
+          PenaltyPoints:int option}
         member this.HasErrors() =
             let statusValidation =
                 match UpdateCarCommands
@@ -126,8 +128,18 @@ module InputModels =
                 | false ->
                     let commands = String.Join(" or ", UpdateCarCommands)
                     Some(sprintf "Status needs to be %s" commands)
+                    
+            let penaltyPointsValidation =
+                match this.Command with
+                | ApplyPenaltyPoints ->
+                    match this.PenaltyPoints with
+                    | Some x -> match x with
+                                | x when x = 0 -> Some "Penalty points must be greater/less than zero" //Could remove penalty points by applying -3
+                                |_ -> None
+                    | None -> Some "Penalty points are required"
+                | _ -> None
 
-            [| statusValidation |] |> Array.choose id
+            [| statusValidation; penaltyPointsValidation |] |> Array.choose id
 
         interface IProblemDetailsValidation<CarStatusUpdateInput> with
             member this.Validate path =
