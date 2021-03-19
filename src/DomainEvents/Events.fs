@@ -72,3 +72,7 @@ module Events =
     type VirtualSafetyCarRecalled(recallTime:DateTimeOffset, currentLap:int) =
         member this.RecallTime = recallTime
         member this.CurrentLap = currentLap
+        
+    type TyreChanged(carId: Guid, tyreChangedTime: DateTimeOffset) =
+        member this.CarId = carId
+        member this.TyreChangedTime = tyreChangedTime

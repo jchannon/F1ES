@@ -5,9 +5,9 @@ open System
 type Car =
     { Team: Team
       Driver: Driver
-      TyreChanged: DateTimeOffset option []
-      NoseChanged: DateTimeOffset option []
-      DownforceChanged: DateTimeOffset option []
+      TyreChanged: DateTimeOffset  []
+      NoseChanged: DateTimeOffset  []
+      DownforceChanged: DateTimeOffset  []
       InPitLane:bool
       EnteredPitLane: DateTimeOffset []
       ExitedPitLane: DateTimeOffset []

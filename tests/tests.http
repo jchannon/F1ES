@@ -3,7 +3,7 @@
 POST http://localhost:5000/race
 Content-Type: application/json
 
-{"trackname":"Silverstone","country":"UK","scheduledstarttime": "2021-02-09T21:05:24Z", "title": "French GP 202912643"}
+{"trackname":"Silverstone","country":"UK","scheduledstarttime": "2021-02-09T21:05:24Z", "title": "French GP 2021"}
 
 > {% client.global.set("location",response.headers.valueOf("location")) %}
 
@@ -82,7 +82,7 @@ GET {{location}}/cars
 POST {{location}}/cars
 Content-Type: application/json
 
-{"cars":[{"team": "Ferrari","driverid": "0177f9ac-faf9-4b19-8364-663b534c22d4"}]}
+{"cars":[{"team": "Ferrari","driverid": "01784a41-7182-4a81-8d5b-00746ecc131a"}]}
 
 ### Get a car
 #@no-log
@@ -105,31 +105,38 @@ GET http://localhost:5000/drivers/0177ba18-975b-4570-a24c-e2c69a651160
 
 ### Car enters pit lane
 #@no-log
-POST {{location}}/cars/77c1a9f2-d42e-4515-b5f2-d42e4d52c594
+POST {{location}}/cars/3972c937-cf8e-4481-9a6a-9bfaf4be5356
 Content-Type: application/json
 
 {"command":"enterpitlane"}
 
 ### Car exits pit lane
 #@no-log
-POST {{location}}/cars/77c1a9f2-d42e-4515-b5f2-d42e4d52c594
+POST {{location}}/cars/3972c937-cf8e-4481-9a6a-9bfaf4be5356
 Content-Type: application/json
 
 {"command":"exitpitlane"}
 
 ### Car enters pit box
 #@no-log
-POST {{location}}/cars/77c1a9f2-d42e-4515-b5f2-d42e4d52c594
+POST {{location}}/cars/3972c937-cf8e-4481-9a6a-9bfaf4be5356
 Content-Type: application/json
 
 {"command":"enterpitbox"}
 
 ### Car exits pit box
 #@no-log
-POST {{location}}/cars/77c1a9f2-d42e-4515-b5f2-d42e4d52c594
+POST {{location}}/cars/3972c937-cf8e-4481-9a6a-9bfaf4be5356
 Content-Type: application/json
 
 {"command":"exitpitbox"}
+
+### Change tyre
+#@no-log
+POST {{location}}/cars/3972c937-cf8e-4481-9a6a-9bfaf4be5356
+Content-Type: application/json
+
+{"command":"changetyre"}
 
 ###Pit stops
 #@no-log
@@ -137,7 +144,7 @@ GET {{location}}/pitstops
 
 ###Pit stops by car
 #@no-log
-GET {{location}}/pitstops/77c1a9f2-d42e-4515-b5f2-d42e4d52c594
+GET {{location}}/pitstops/3972c937-cf8e-4481-9a6a-9bfaf4be5356
 
 ###Start new lap
 #@no-log

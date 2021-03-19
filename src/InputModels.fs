@@ -106,7 +106,7 @@ module InputModels =
 
                     Error(RequestErrors.unprocessableEntity (problemDetailsHandler problemDetails))
 
-    let UpdateCarCommands = [| EnterPitLane; ExitPitLane;EnterPitBox;ExitPitBox |]
+    let UpdateCarCommands = [| EnterPitLane; ExitPitLane;EnterPitBox;ExitPitBox;ChangeTyre |]
 
     [<CLIMutable>]
     type CarStatusUpdateInput =

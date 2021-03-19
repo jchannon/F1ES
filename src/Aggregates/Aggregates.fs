@@ -174,6 +174,16 @@ module Aggregates =
                               })
             this.VirtualSafetyCarDeployed <- false
             ()
+            
+        member this.Apply(event: TyreChanged) =
+            this.Cars <-
+                this.Cars
+                |> updateElement event.CarId (fun car ->
+                       { car with
+                             TyreChanged = Array.append car.TyreChanged [| event.TyreChangedTime |]
+                              })
+
+            ()
 
 
     type Driver() =

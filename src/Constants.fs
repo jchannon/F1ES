@@ -50,3 +50,6 @@ module Constants =
     
     [<Literal>]
     let RecallVirtualSafetyCar = "recallvirtualsafetycar"
+
+    [<Literal>]
+    let ChangeTyre = "changetyre"

@@ -24,8 +24,8 @@ module Projections =
         member val Country: string = "" with get, set
         member val ScheduledStartTime: DateTimeOffset = DateTimeOffset.MinValue with get, set
         member val CurrentLap = 0 with get, set
-        member val SafetyCarOnTrack = false with get,set
-        member val VirtualSafetyCarDeployed = false with get,set
+        member val SafetyCarOnTrack = false with get, set
+        member val VirtualSafetyCarDeployed = false with get, set
 
     type RaceProjection() as self =
         inherit ViewProjection<RaceSummary, Guid>()
@@ -33,7 +33,7 @@ module Projections =
         let updateElement key f array =
             array
             |> Array.map (fun x -> if x.Id = key then f x else x)
-            
+
         let updateLap key f laps =
             laps
             |> Array.map (fun x -> if x.Number = key then f x else x)
@@ -77,20 +77,23 @@ module Projections =
 
             self.ProjectEvent<CarExitedPitBox>(self.ApplyCarExitedPitBox)
             |> ignore
-            
+
             self.ProjectEvent<LapStarted>(self.ApplyLapStarted)
             |> ignore
-            
+
             self.ProjectEvent<SafetyCarDeployed>(self.ApplySafetyCarDeployed)
             |> ignore
-            
+
             self.ProjectEvent<SafetyCarRecalled>(self.ApplySafetyCarRecalled)
             |> ignore
-            
+
             self.ProjectEvent<VirtualSafetyCarDeployed>(self.ApplyVirtualSafetyCarDeployed)
             |> ignore
-            
+
             self.ProjectEvent<VirtualSafetyCarRecalled>(self.ApplyVirtualSafetyCarRecalled)
+            |> ignore
+            
+            self.ProjectEvent<TyreChanged>(self.ApplyTyreChanged)
             |> ignore
 
         //self.DeleteEvent<RaceStarted>() |> ignore
@@ -106,6 +109,7 @@ module Projections =
 
         member this.ApplyRaceStarted (projection: RaceSummary) (event: RaceStarted) =
             projection.RaceStarted <- Some event.RaceStarted
+
             let lap =
                 { LapStarted = event.RaceStarted
                   SafetyCarDeployed = None
@@ -187,8 +191,8 @@ module Projections =
                              InPitBox = false })
 
             ()
-            
-        member this.ApplyLapStarted (projection:RaceSummary) (event: LapStarted) =
+
+        member this.ApplyLapStarted (projection: RaceSummary) (event: LapStarted) =
             let lap =
                 { LapStarted = event.LapStartedTime
                   SafetyCarDeployed = None
@@ -198,44 +202,53 @@ module Projections =
                   Number = projection.Laps.Length + 1 }
 
             projection.Laps <- Array.append projection.Laps [| lap |]
-            
-        member this.ApplySafetyCarDeployed (projection:RaceSummary) (event: SafetyCarDeployed) =
+
+        member this.ApplySafetyCarDeployed (projection: RaceSummary) (event: SafetyCarDeployed) =
             projection.Laps <-
                 projection.Laps
                 |> updateLap event.CurrentLap (fun lap ->
                        { lap with
                              SafetyCarDeployed = Some event.DeployedTime })
-                
+
             projection.SafetyCarOnTrack <- true
 
-            
-        member this.ApplySafetyCarRecalled (projection:RaceSummary) (event: SafetyCarRecalled) =
+
+        member this.ApplySafetyCarRecalled (projection: RaceSummary) (event: SafetyCarRecalled) =
             projection.Laps <-
                 projection.Laps
                 |> updateLap event.CurrentLap (fun lap ->
                        { lap with
                              SafetyCarEnded = Some event.RecallTime })
-                
+
             projection.SafetyCarOnTrack <- false
-            
-        member this.ApplyVirtualSafetyCarDeployed (projection:RaceSummary) (event: VirtualSafetyCarDeployed) =
+
+        member this.ApplyVirtualSafetyCarDeployed (projection: RaceSummary) (event: VirtualSafetyCarDeployed) =
             projection.Laps <-
                 projection.Laps
                 |> updateLap event.CurrentLap (fun lap ->
                        { lap with
                              VirtualSafetyCarDeployed = Some event.DeployedTime })
-                
+
             projection.VirtualSafetyCarDeployed <- true
-            
-        member this.ApplyVirtualSafetyCarRecalled (projection:RaceSummary) (event: VirtualSafetyCarRecalled) =
+
+        member this.ApplyVirtualSafetyCarRecalled (projection: RaceSummary) (event: VirtualSafetyCarRecalled) =
             projection.Laps <-
                 projection.Laps
                 |> updateLap event.CurrentLap (fun lap ->
                        { lap with
-                             VirtualSafetyCarEnded = Some event.RecallTime
-                              })
+                             VirtualSafetyCarEnded = Some event.RecallTime })
+
             projection.VirtualSafetyCarDeployed <- false
-            
+
+        member this.ApplyTyreChanged (projection: RaceSummary) (event: TyreChanged) =
+            projection.Cars <-
+                projection.Cars
+                |> updateElement event.CarId (fun car ->
+                       { car with
+                             TyreChanged = Array.append car.TyreChanged [| event.TyreChangedTime |] })
+
+
+
 
     type Pitstop =
         { PitLaneEntryTime: DateTimeOffset
