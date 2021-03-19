@@ -509,7 +509,7 @@ module CommandHandlers =
                       Title = "Car command failed"
                       Instance = path
                       Type = "https://example.net/validation-error" }
-                    
+
     let recordTyreChanged (store: IDocumentStore) (raceId: Guid) (carId: Guid) (path: string) =
         use session = store.OpenSession()
 
@@ -553,8 +553,8 @@ module CommandHandlers =
                       Title = "Car command failed"
                       Instance = path
                       Type = "https://example.net/validation-error" }
-                    
-                    
+
+
     let recordNoseChanged (store: IDocumentStore) (raceId: Guid) (carId: Guid) (path: string) =
         use session = store.OpenSession()
 
@@ -598,7 +598,7 @@ module CommandHandlers =
                       Title = "Car command failed"
                       Instance = path
                       Type = "https://example.net/validation-error" }
-                    
+
     let recordDownforceChanged (store: IDocumentStore) (raceId: Guid) (carId: Guid) (path: string) =
         use session = store.OpenSession()
 
@@ -642,8 +642,13 @@ module CommandHandlers =
                       Title = "Car command failed"
                       Instance = path
                       Type = "https://example.net/validation-error" }
-                    
-    let recordPenaltyPoints (store: IDocumentStore) (raceId: Guid) (carId: Guid) (model: CarStatusUpdateInput) (path: string) =
+
+    let recordPenaltyPoints (store: IDocumentStore)
+                            (raceId: Guid)
+                            (carId: Guid)
+                            (model: CarStatusUpdateInput)
+                            (path: string)
+                            =
         use session = store.OpenSession()
 
         let race =
@@ -666,7 +671,7 @@ module CommandHandlers =
                   Type = "https://example.net/validation-error" }
         | Some _, Some _
         | Some _, None _ ->
-            
+
             let penaltyPointsApplied =
                 PenaltyPointsApplied(carId, model.PenaltyPoints.Value)
 
@@ -675,8 +680,13 @@ module CommandHandlers =
 
             session.SaveChanges()
             Ok()
-            
-    let recordDriveThroughPenalty (store: IDocumentStore) (raceId: Guid) (carId: Guid) (model: CarStatusUpdateInput) (path: string) =
+
+    let recordDriveThroughPenalty (store: IDocumentStore)
+                                  (raceId: Guid)
+                                  (carId: Guid)
+                                  (model: CarStatusUpdateInput)
+                                  (path: string)
+                                  =
         use session = store.OpenSession()
 
         let race =
@@ -698,9 +708,9 @@ module CommandHandlers =
                   Title = "Car command failed"
                   Instance = path
                   Type = "https://example.net/validation-error" }
-        
+
         | Some _, None _ ->
-            
+
             let driveThroughPenaltyApplied =
                 DriveThroughPenaltyApplied(carId, model.DriveThroughPenalty.Value)
 
@@ -709,6 +719,39 @@ module CommandHandlers =
 
             session.SaveChanges()
             Ok()
+
+    let recordDriverRetired (store: IDocumentStore) (raceId: Guid) (carId: Guid) (path: string) =
+        use session = store.OpenSession()
+
+        let race =
+            session.Events.AggregateStream<Race>(raceId)
+
+        match race.RaceStarted, race.RaceEnded with
+        | Some _, Some _
+        | None, Some _ ->
+            Error
+                { Detail = "The race has already ended"
+                  Status = 409
+                  Title = "Car command failed"
+                  Instance = path
+                  Type = "https://example.net/validation-error" }
+        | None, None ->
+            Error
+                { Detail = "The race hasn't started"
+                  Status = 409
+                  Title = "Car command failed"
+                  Instance = path
+                  Type = "https://example.net/validation-error" }
+        | Some _, None _ ->
+
+            let driverRetired = DriverRetired(carId)
+
+            session.Events.Append(raceId, driverRetired)
+            |> ignore
+
+            session.SaveChanges()
+            Ok()
+
 
 
     let updateCar (store: IDocumentStore) (raceId: Guid) (carId: Guid) (model: CarStatusUpdateInput) (path: string) =
@@ -725,6 +768,7 @@ module CommandHandlers =
             | ChangeDownforce -> recordDownforceChanged store raceId carId path
             | ApplyPenaltyPoints -> recordPenaltyPoints store raceId carId model path
             | ApplyDriveThroughPenalty -> recordDriveThroughPenalty store raceId carId model path
+            | RetireDriver -> recordDriverRetired store raceId carId path
             | _ ->
                 Error
                     { Detail = "Car command failed, unknown command"
@@ -1012,8 +1056,8 @@ module CommandHandlers =
 
                     session.SaveChanges()
                     Ok()
-                    
-                    
+
+
     let recallVirtualSafetyCar (store: IDocumentStore) (raceId: Guid) (path: string) =
         use session = store.OpenSession()
 

@@ -92,3 +92,6 @@ module Events =
     type DriveThroughPenaltyApplied(carId: Guid, penaltyPoints: int) =
         member this.CarId = carId
         member this.DriveThroughPenaltyInSeconds = penaltyPoints
+        
+    type DriverRetired(carId: Guid) =
+        member this.CarId = carId

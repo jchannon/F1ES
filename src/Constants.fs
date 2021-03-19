@@ -65,3 +65,6 @@ module Constants =
     
     [<Literal>]
     let ApplyDriveThroughPenalty = "applydrivethroughpenalty"
+    
+    [<Literal>]
+    let RetireDriver = "retiredriver"

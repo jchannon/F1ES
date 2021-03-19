@@ -215,6 +215,13 @@ module Aggregates =
                                            car.Driver.DriveThroughPenaltyInSeconds
                                            + event.DriveThroughPenaltyInSeconds } })
 
+        member this.Apply(event: DriverRetired) =
+            this.Cars <-
+                this.Cars
+                |> updateElement event.CarId (fun car ->
+                       { car with
+                             Driver = { car.Driver with Retired = true } })
+
 
 
     type Driver() =

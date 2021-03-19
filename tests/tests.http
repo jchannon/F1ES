@@ -166,6 +166,13 @@ Content-Type: application/json
 
 {"command":"applydrivethroughpenalty", "drivethroughpenalty": 10}
 
+### Retire driver
+#@no-log
+POST {{location}}/cars/3fad9f42-b391-47b3-84f2-45821dd10804
+Content-Type: application/json
+
+{"command":"retiredriver"}
+
 ###Pit stops
 #@no-log
 GET {{location}}/pitstops
