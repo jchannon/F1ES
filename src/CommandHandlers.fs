@@ -553,6 +553,51 @@ module CommandHandlers =
                       Title = "Car command failed"
                       Instance = path
                       Type = "https://example.net/validation-error" }
+                    
+                    
+    let recordNoseChanged (store: IDocumentStore) (raceId: Guid) (carId: Guid) (path: string) =
+        use session = store.OpenSession()
+
+        let race =
+            session.Events.AggregateStream<Race>(raceId)
+
+        match race.RaceStarted, race.RaceEnded with
+        | Some _, Some _
+        | None, Some _ ->
+            Error
+                { Detail = "The race has already ended"
+                  Status = 409
+                  Title = "Car command failed"
+                  Instance = path
+                  Type = "https://example.net/validation-error" }
+        | None, None ->
+            Error
+                { Detail = "The race hasn't started"
+                  Status = 409
+                  Title = "Car command failed"
+                  Instance = path
+                  Type = "https://example.net/validation-error" }
+        | Some _, None _ ->
+            let car =
+                race.Cars |> Array.find (fun x -> x.Id = carId)
+
+            match car.InPitBox with
+            | true ->
+                let noseChanged =
+                    NoseChanged(carId, DateTimeOffset.UtcNow)
+
+                session.Events.Append(raceId, noseChanged)
+                |> ignore
+
+                session.SaveChanges()
+                Ok()
+            | false ->
+                Error
+                    { Detail = "The car is not in the pitbox"
+                      Status = 409
+                      Title = "Car command failed"
+                      Instance = path
+                      Type = "https://example.net/validation-error" }
 
 
     let updateCar (store: IDocumentStore) (raceId: Guid) (carId: Guid) (model: CarStatusUpdateInput) (path: string) =
@@ -565,6 +610,7 @@ module CommandHandlers =
             | EnterPitBox -> recordPitBoxEntry store raceId carId path
             | ExitPitBox -> recordPitBoxExit store raceId carId path
             | ChangeTyre -> recordTyreChanged store raceId carId path
+            | ChangeNose -> recordNoseChanged store raceId carId path
             | _ ->
                 Error
                     { Detail = "Car command failed, unknown command"

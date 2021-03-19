@@ -53,3 +53,6 @@ module Constants =
 
     [<Literal>]
     let ChangeTyre = "changetyre"
+    
+    [<Literal>]
+    let ChangeNose = "changenose"

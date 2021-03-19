@@ -28,8 +28,8 @@ module Aggregates =
         member val Cars = Array.empty<Car> with get, set
         member val ScheduledStartTime: DateTimeOffset option = None with get, set
         member val CurrentLap = 0 with get, set
-        member val SafetyCarOnTrack = false with get,set
-        member val VirtualSafetyCarDeployed = false with get,set
+        member val SafetyCarOnTrack = false with get, set
+        member val VirtualSafetyCarDeployed = false with get, set
 
 
         member this.Apply(event: RaceScheduled) =
@@ -129,8 +129,7 @@ module Aggregates =
                   SafetyCarEnded = None
                   VirtualSafetyCarDeployed = None
                   VirtualSafetyCarEnded = None
-                  Number = this.Laps.Length + 1
-                  }
+                  Number = this.Laps.Length + 1 }
 
             this.Laps <- Array.append this.Laps [| lap |]
             this.CurrentLap <- lap.Number
@@ -140,50 +139,55 @@ module Aggregates =
                 this.Laps
                 |> updateLap event.CurrentLap (fun lap ->
                        { lap with
-                             SafetyCarDeployed = Some event.DeployedTime
-                              })
+                             SafetyCarDeployed = Some event.DeployedTime })
+
             this.SafetyCarOnTrack <- true
             ()
-            
+
         member this.Apply(event: SafetyCarRecalled) =
             this.Laps <-
                 this.Laps
                 |> updateLap event.CurrentLap (fun lap ->
                        { lap with
-                             SafetyCarEnded = Some event.RecallTime
-                              })
+                             SafetyCarEnded = Some event.RecallTime })
+
             this.SafetyCarOnTrack <- false
             ()
-            
+
         member this.Apply(event: VirtualSafetyCarDeployed) =
             this.Laps <-
                 this.Laps
                 |> updateLap event.CurrentLap (fun lap ->
                        { lap with
-                             VirtualSafetyCarDeployed = Some event.DeployedTime
-                              })
+                             VirtualSafetyCarDeployed = Some event.DeployedTime })
+
             this.VirtualSafetyCarDeployed <- true
             ()
-            
+
         member this.Apply(event: VirtualSafetyCarRecalled) =
             this.Laps <-
                 this.Laps
                 |> updateLap event.CurrentLap (fun lap ->
                        { lap with
-                             VirtualSafetyCarEnded = Some event.RecallTime
-                              })
+                             VirtualSafetyCarEnded = Some event.RecallTime })
+
             this.VirtualSafetyCarDeployed <- false
             ()
-            
+
         member this.Apply(event: TyreChanged) =
             this.Cars <-
                 this.Cars
                 |> updateElement event.CarId (fun car ->
                        { car with
-                             TyreChanged = Array.append car.TyreChanged [| event.TyreChangedTime |]
-                              })
+                             TyreChanged = Array.append car.TyreChanged [| event.TyreChangedTime |] })
 
-            ()
+        member this.Apply(event: NoseChanged) =
+            this.Cars <-
+                this.Cars
+                |> updateElement event.CarId (fun car ->
+                       { car with
+                             NoseChanged = Array.append car.TyreChanged [| event.NoseChangedTime |] })
+
 
 
     type Driver() =

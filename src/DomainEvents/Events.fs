@@ -76,3 +76,7 @@ module Events =
     type TyreChanged(carId: Guid, tyreChangedTime: DateTimeOffset) =
         member this.CarId = carId
         member this.TyreChangedTime = tyreChangedTime
+        
+    type NoseChanged(carId: Guid, noseChangedTime: DateTimeOffset) =
+        member this.CarId = carId
+        member this.NoseChangedTime = noseChangedTime

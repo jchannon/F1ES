@@ -138,6 +138,13 @@ Content-Type: application/json
 
 {"command":"changetyre"}
 
+### Change nose
+#@no-log
+POST {{location}}/cars/3972c937-cf8e-4481-9a6a-9bfaf4be5356
+Content-Type: application/json
+
+{"command":"changenose"}
+
 ###Pit stops
 #@no-log
 GET {{location}}/pitstops

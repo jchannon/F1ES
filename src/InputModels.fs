@@ -106,7 +106,13 @@ module InputModels =
 
                     Error(RequestErrors.unprocessableEntity (problemDetailsHandler problemDetails))
 
-    let UpdateCarCommands = [| EnterPitLane; ExitPitLane;EnterPitBox;ExitPitBox;ChangeTyre |]
+    let UpdateCarCommands =
+        [| EnterPitLane
+           ExitPitLane
+           EnterPitBox
+           ExitPitBox
+           ChangeTyre
+           ChangeNose |]
 
     [<CLIMutable>]
     type CarStatusUpdateInput =
@@ -194,7 +200,12 @@ module InputModels =
 
                     Error(RequestErrors.unprocessableEntity (problemDetailsHandler problemDetails))
 
-    let UpdateLapCommands = [| StartLap; DeploySafetyCar; RecallSafetyCar; DeployVirtualSafetyCar; RecallVirtualSafetyCar |]
+    let UpdateLapCommands =
+        [| StartLap
+           DeploySafetyCar
+           RecallSafetyCar
+           DeployVirtualSafetyCar
+           RecallVirtualSafetyCar |]
 
     [<CLIMutable>]
     type LapUpdateInput =

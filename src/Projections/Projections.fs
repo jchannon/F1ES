@@ -95,6 +95,9 @@ module Projections =
             
             self.ProjectEvent<TyreChanged>(self.ApplyTyreChanged)
             |> ignore
+            
+            self.ProjectEvent<NoseChanged>(self.ApplyNoseChanged)
+            |> ignore
 
         //self.DeleteEvent<RaceStarted>() |> ignore
 
@@ -246,6 +249,13 @@ module Projections =
                 |> updateElement event.CarId (fun car ->
                        { car with
                              TyreChanged = Array.append car.TyreChanged [| event.TyreChangedTime |] })
+                
+        member this.ApplyNoseChanged (projection: RaceSummary) (event: NoseChanged) =
+            projection.Cars <-
+                projection.Cars
+                |> updateElement event.CarId (fun car ->
+                       { car with
+                             NoseChanged = Array.append car.NoseChanged [| event.NoseChangedTime |] })
 
 
 
