@@ -7,24 +7,14 @@ A race can be scheduled for a location, circuit and date for example.  Cars for 
 The race can be started, re-started, red flagged, re-scheduled, pit lane opened/closed. A car can enter a pit lane and a pit box and also exit these.
 
 These events can be triggered via HTTP. They are then recorded in a Marten event store. Race information can be queried also using Marten projections
-## HTTP
-
-## CQRS
-
-## ES
-
-### Events
  
   
-DriverBlackFlagged  
+#### TODO
 DriverEngagedDRS
 DriverDisEngagedDRS 
 DriverCrashed  
 DriverRetired  
  
-
-
-### Aggregates
 
 ## References
 
